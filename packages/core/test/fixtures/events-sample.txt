@@ -1,0 +1,6 @@
+#EventID|Time|Latitude|Longitude|Depth/Km|Author|Catalog|Contributor|ContributorID|MagType|Magnitude|MagAuthor|EventLocationName|EventType
+46608102|2026-07-20T23:35:15.420000|43.0553|13.4083|22.3|SURVEY-INGV||||ML|2.0|--|1 km W Penna San Giovanni (MC)|earthquake
+46606592|2026-07-20T17:18:29.140000|38.9682|16.898|31.2|SURVEY-INGV||||ML|2.1|--|5 km NE Botricello (CZ)|earthquake
+46605932|2026-07-20T16:18:57.940000|38.497|15.4592|129.9|SURVEY-INGV||||ML|2.1|--|Tirreno Meridionale [Mare]|earthquake
+46600012|2026-07-20T04:38:34.850000|44.2982|10.7028|9.0|SURVEY-INGV||||ML|2.0|--|3 km W Lama Mocogno (MO)|earthquake
+46599892|2026-07-20T04:18:18.850000|41.4693|15.8323|10.5|SURVEY-INGV||||ML|2.2|--|10 km W Zapponeta (FG)|earthquake
