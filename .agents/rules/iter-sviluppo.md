@@ -29,7 +29,7 @@ Brainstorming requisiti → esplorazione design → piano scritto → TDD su `pa
   - Deploy iniziale su **Vercel** (revisione 2026-08 in AGENTS.md): le skill di deploy del plugin vercel sono utilizzabili. Mantenere il proxy su semantica HTTP standard: la portabilità futura a Cloudflare Workers resta un requisito.
 - Verifica visiva iterativa nel browser (MCP chrome-devtools/playwright, `web-architect:web-screenshots`).
 - Polish quando serve: `cortex:loading-states` (stati di polling/attesa), `cortex:responsive-craft` (mappa + tabelle dati), `cortex:css-interaction-tips` per micro-interazioni.
-- Motion: **GSAP** con le skill del repo (`gsap-core`, `gsap-react`, `gsap-timeline`, `gsap-scrolltrigger`, `gsap-performance`). **Non** usare `cortex:framer-motion` né proporre framer-motion/motion: scelta chiusa in AGENTS.md.
+- Motion: **anime.js v4** con la skill `animejs` del repo (`.agents/skills/animejs`, symlinkata per Claude Code). **Non** usare `cortex:framer-motion` né skill/pattern GSAP: scelta chiusa in AGENTS.md.
 
 ## Trasversali (sempre validi)
 

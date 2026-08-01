@@ -12,7 +12,7 @@ Webapp di monitoraggio sismico per il cittadino, basata sui Web Services FDSN IN
 | Componenti UI | **shadcn/ui** per tutta l'interfaccia; **Tweakpane** solo per il pannello expert, ri-temato via CSS vars `--tp-*` sugli stessi token |
 | Estetica | Design system ispirato a **Nothing** (monocromo, dot-matrix, accento rosso singolo) fuso con il carattere "instrument panel" di Tweakpane |
 | Temi | **Dark + light dalla v1**, dark default (identità Nothing). Classi `.theme-dark`/`.theme-light` + `@custom-variant dark`, init da `prefers-color-scheme`, toggle manuale |
-| Animazioni | **GSAP** (skill nel repo: `gsap-core`, `gsap-react`, …), **non** framer-motion. Componenti React di terze parti che animano il DOM con framer-motion vanno migrati a GSAP o scartati in selezione |
+| Animazioni | **anime.js v4** (revisione 2026-08 della scelta GSAP: −38% bundle misurato, ESM tree-shakeable, adeguata al motion sobrio). Hook React interno su `createScope`; skill in `.agents/skills/animejs` (vendorizzata da BowTiedSwan/animejs-skills, pinnata in `skills-lock.json`). **Non** framer-motion né GSAP: componenti terzi che animano con framer-motion vanno migrati o scartati |
 | Token | SoT platform-neutral in **`packages/tokens`** (TS/JSON) → generatori per CSS vars web, stile MapLibre, costanti RN (Fase 2). Tailwind v4 è solo un consumatore |
 | Deploy | **Vercel inizialmente** (revisione della scelta Cloudflare in AGENTS.md, su richiesta esplicita). Proxy con semantica HTTP standard → portabile a Cloudflare |
 | Dati | Approccio "un dataset per finestra": query grandi solo dal proxy (cache CDN condivisa), interazioni (scrub/filtri) client-side sul dataset caricato |
@@ -111,7 +111,7 @@ Drawer/Sheet, Tabs (finestre), ScrollArea (lista), Badge, Tooltip, Sonner (toast
 - Un solo accento (rosso) usato con disciplina: voce attiva, cursore timeline, eventi recenti/selezionati, LIVE
 - Mappa monocroma custom: terra quasi-nera (dark) / carta chiara (light), confini e label sommessi, zero POI
 - Tweakpane rimappato sui token via `--tp-*` in entrambi i temi
-- Motion sobrio e strumentale, implementato con **GSAP** (`gsap.matchMedia()` per `prefers-reduced-motion` e breakpoint); nessun effetto drammatizzante. Framer-motion escluso: eventuali componenti terzi che lo usano vanno migrati a GSAP
+- Motion sobrio e strumentale, implementato con **anime.js v4** (import selettivi ESM; `createScope` con `mediaQueries` per `prefers-reduced-motion` e breakpoint; cleanup via `revert()` in un hook React interno); nessun effetto drammatizzante. Framer-motion e GSAP esclusi: eventuali componenti terzi che li usano vanno migrati o scartati
 
 ## 4. Stati, errori e trasparenza dati
 
