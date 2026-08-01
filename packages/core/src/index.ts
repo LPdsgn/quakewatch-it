@@ -5,3 +5,4 @@ export * from './windows';
 export * from './areas';
 export * from './parse-text';
 export * from './dedup';
+export * from './parse-quakeml';
