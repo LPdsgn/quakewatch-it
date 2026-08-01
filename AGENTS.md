@@ -8,7 +8,7 @@ Webapp informativa di monitoraggio sismico (Italia, focus possibile su aree come
 
 ## Fonte dati
 
-Tutto il necessario sull'API INGV è in `docs/api-web-services.md` (endpoint, parametri, formati, strategia di polling). Non duplicare qui quel contenuto. Fatti verificati empiricamente (2026-08) oltre la doc:
+Tutto il necessario sull'API INGV è in `docs/api-web-services.md` (endpoint, parametri, formati, strategia di polling). Risorse INGV su GitHub e valutazione dei cataloghi PA in `docs/risorse-esterne.md` — in particolare: esiste l'**MCP server ufficiale INGV** (`docker run -i --rm ingv/mcp-fdsnws-event`) per interrogare il catalogo eventi durante lo sviluppo, e il servizio extra `ingvws/shakedata` per i dati di scuotimento. Non duplicare qui quei contenuti. Fatti verificati empiricamente (2026-08) oltre la doc:
 
 - CORS aperto (`Access-Control-Allow-Origin: *`) sull'endpoint Event
 - INGV cache-a le risposte con `max-age=60` → polling a 60s si allinea alla loro cache
@@ -28,6 +28,7 @@ Scelte chiuse — non rimetterle in discussione senza richiesta esplicita:
 - Mappe: **MapLibre GL** + tile gratuiti (OpenFreeMap/Protomaps), zero costi licenza
 - Niente backend/DB proprio, niente CMS/WordPress: l'API INGV è la sola fonte
 - Polling HTTP, non WebSocket (l'API è query-only); finestra sovrapposta 5–15 min
+- Per i repo INGV: MCP server via Docker/`.mcp.json`, spec OpenAPI via raw URL pinnata a SHA (dettagli in `docs/risorse-esterne.md`)
 
 ## Vincoli non negoziabili
 
