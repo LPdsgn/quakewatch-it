@@ -49,4 +49,28 @@ describe('GET /api/events/[eventId]', () => {
 		const res = await call('44125672')
 		expect(res.status).toBe(502)
 	})
+
+	it('404 response ha Cache-Control no-store (RFC 9111)', async () => {
+		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 204 })))
+		const res = await call('999999999')
+		expect(res.status).toBe(404)
+		expect(res.headers.get('Cache-Control')).toBe('no-store')
+	})
+
+	it('502 su QuakeML non parsabile ha Cache-Control no-store', async () => {
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue(new Response('<html></html>', { status: 200 }))
+		)
+		const res = await call('44125672')
+		expect(res.status).toBe(502)
+		expect(res.headers.get('Cache-Control')).toBe('no-store')
+	})
+
+	it('502 su fetch timeout (AbortSignal.timeout)', async () => {
+		const timeoutError = new DOMException('The operation was aborted.', 'TimeoutError')
+		vi.stubGlobal('fetch', vi.fn().mockRejectedValue(timeoutError))
+		const res = await call('44125672')
+		expect(res.status).toBe(502)
+	})
 })

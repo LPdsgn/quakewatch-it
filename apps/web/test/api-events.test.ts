@@ -68,4 +68,12 @@ describe('GET /api/events', () => {
 		const res = await GET(req('?window=24h'))
 		expect(res.status).toBe(502)
 	})
+
+	it('502 su fetch timeout ha Cache-Control no-store', async () => {
+		const timeoutError = new DOMException('The operation was aborted.', 'TimeoutError')
+		vi.stubGlobal('fetch', vi.fn().mockRejectedValue(timeoutError))
+		const res = await GET(req('?window=24h'))
+		expect(res.status).toBe(502)
+		expect(res.headers.get('Cache-Control')).toBe('no-store')
+	})
 })

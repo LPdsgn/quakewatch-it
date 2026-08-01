@@ -21,7 +21,7 @@ export async function GET(
 	const upstream = buildEventDetailUrl(env.INGV_BASE_URL, eventId)
 	let res: Response
 	try {
-		res = await fetch(upstream)
+		res = await fetch(upstream, { signal: AbortSignal.timeout(10_000) })
 	} catch {
 		return Response.json(
 			{ error: 'INGV non raggiungibile' },
@@ -30,7 +30,10 @@ export async function GET(
 	}
 
 	if (res.status === 204 || res.status === 404) {
-		return Response.json({ error: 'evento non trovato' }, { status: 404 })
+		return Response.json(
+			{ error: 'evento non trovato' },
+			{ status: 404, headers: { 'Cache-Control': 'no-store' } }
+		)
 	}
 	if (!res.ok) {
 		return Response.json(
@@ -41,7 +44,10 @@ export async function GET(
 
 	const detail = parseQuakemlEvent(await res.text())
 	if (!detail) {
-		return Response.json({ error: 'risposta INGV non interpretabile' }, { status: 502 })
+		return Response.json(
+			{ error: 'risposta INGV non interpretabile' },
+			{ status: 502, headers: { 'Cache-Control': 'no-store' } }
+		)
 	}
 
 	return Response.json(

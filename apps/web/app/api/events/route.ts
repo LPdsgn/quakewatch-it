@@ -30,7 +30,7 @@ export async function GET(request: Request): Promise<Response> {
 	const upstream = buildEventsUrl(env.INGV_BASE_URL, window, area, new Date())
 	let res: Response
 	try {
-		res = await fetch(upstream)
+		res = await fetch(upstream, { signal: AbortSignal.timeout(10_000) })
 	} catch {
 		return Response.json(
 			{ error: 'INGV non raggiungibile' },
