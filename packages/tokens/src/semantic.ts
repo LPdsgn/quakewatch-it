@@ -27,6 +27,9 @@ function build(
 		border: n[500],
 		input: n[500],
 		outline: RED[500],
+		// Scrim overlay (drawer/dialog backdrop): resta scuro in entrambi i temi,
+		// convenzione standard per gli overlay — l'alpha la applica la utility class.
+		overlay: 'hsl(0 0% 0%)',
 		error: STATUS.error,
 		'error-foreground': 'hsl(0 0% 100%)',
 		warning: STATUS.warning,

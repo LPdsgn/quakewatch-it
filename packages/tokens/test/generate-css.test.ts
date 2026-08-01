@@ -29,6 +29,7 @@ describe('SEMANTIC_TOKENS', () => {
 			'border',
 			'input',
 			'outline',
+			'overlay',
 			'error',
 			'error-foreground',
 			'warning',

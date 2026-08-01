@@ -19,6 +19,7 @@
 	--border: hsl(0 0% 22%);
 	--input: hsl(0 0% 22%);
 	--outline: hsl(355 85% 55%);
+	--overlay: hsl(0 0% 0%);
 	--error: hsl(0 55% 42%);
 	--error-foreground: hsl(0 0% 100%);
 	--warning: hsl(45 90% 50%);
@@ -65,6 +66,7 @@
 	--border: hsl(0 0% 68%);
 	--input: hsl(0 0% 68%);
 	--outline: hsl(355 85% 55%);
+	--overlay: hsl(0 0% 0%);
 	--error: hsl(0 55% 42%);
 	--error-foreground: hsl(0 0% 100%);
 	--warning: hsl(45 90% 50%);
