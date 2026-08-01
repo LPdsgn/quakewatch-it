@@ -6,16 +6,16 @@
 # nativi di lefthook).
 
 pre-commit:
-  parallel: true
-  commands:
-    oxc:
-      glob: '*.{ts,tsx,js,jsx,mjs,cjs}'
-      # oxlint blocca il commit se fallisce (niente --fix: non deve alterare
-      # la logica). Solo se il lint passa gira oxfmt in scrittura; i file
-      # vengono ri-aggiunti allo stage da `stage_fixed`.
-      #
-      # `pnpm lint:types` (oxlint-tsgolint, type-aware) NON è in questo hook:
-      # richiede un check di tipo su tutto il progetto, troppo lento per un
-      # pre-commit. Va lanciato a mano o in CI (vedi Parte B del task lint2).
-      run: pnpm exec oxlint --no-error-on-unmatched-pattern {staged_files} && pnpm exec oxfmt --write --no-error-on-unmatched-pattern {staged_files}
-      stage_fixed: true
+   parallel: true
+   commands:
+      oxc:
+         glob: '*.{ts,tsx,js,jsx,mjs,cjs}'
+         # oxlint blocca il commit se fallisce (niente --fix: non deve alterare
+         # la logica). Solo se il lint passa gira oxfmt in scrittura; i file
+         # vengono ri-aggiunti allo stage da `stage_fixed`.
+         #
+         # `pnpm lint:types` (oxlint-tsgolint, type-aware) NON è in questo hook:
+         # richiede un check di tipo su tutto il progetto, troppo lento per un
+         # pre-commit. Va lanciato a mano o in CI (vedi Parte B del task lint2).
+         run: pnpm exec oxlint --no-error-on-unmatched-pattern {staged_files} && pnpm exec oxfmt --write --no-error-on-unmatched-pattern {staged_files}
+         stage_fixed: true

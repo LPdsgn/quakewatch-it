@@ -1,10 +1,10 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
+   - 'apps/*'
+   - 'packages/*'
 
 # Equivalente di satus' trustedDependencies (loro usano bun): autorizza i
 # build script nativi. Lista verificata sull'output reale di `pnpm install`.
 allowBuilds:
-  esbuild: true
-  lefthook: true
-  sharp: true
+   esbuild: true
+   lefthook: true
+   sharp: true

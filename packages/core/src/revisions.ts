@@ -8,12 +8,10 @@ export type RevisionStatus = 'preliminare' | 'rivisto'
  * o non dichiarata) resta "preliminare": mai sovrastimare l'affidabilità.
  */
 export function revisionStatus(detail: EventDetail): RevisionStatus {
-  return detail.preferredOrigin.evaluationMode === 'manual'
-    ? 'rivisto'
-    : 'preliminare'
+	return detail.preferredOrigin.evaluationMode === 'manual' ? 'rivisto' : 'preliminare'
 }
 
 /** True se l'evento ha uno storico di revisioni da mostrare (spec §2, dettaglio). */
 export function hasRevisions(detail: EventDetail): boolean {
-  return detail.origins.length > 1 || detail.magnitudes.length > 1
+	return detail.origins.length > 1 || detail.magnitudes.length > 1
 }
