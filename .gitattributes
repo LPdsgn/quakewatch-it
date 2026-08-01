@@ -1,0 +1,77 @@
+# gitattributes — normalizzazione cross-platform.
+# Tutto LF in repo (norma POSIX). Su Windows i tool moderni leggono LF senza problemi.
+# Per applicare alle copie esistenti dopo merge: `git add --renormalize .`
+
+# Default: testo auto-detect, EOL LF in repo
+* text=auto eol=lf
+
+# Source code → LF rigoroso
+*.ts          text eol=lf
+*.tsx         text eol=lf
+*.js          text eol=lf
+*.jsx         text eol=lf
+*.mjs         text eol=lf
+*.cjs         text eol=lf
+*.json        text eol=lf
+*.json5       text eol=lf
+*.yml         text eol=lf
+*.yaml        text eol=lf
+*.md          text eol=lf
+*.html        text eol=lf
+*.css         text eol=lf
+*.scss        text eol=lf
+*.svg         text eol=lf
+*.toml        text eol=lf
+
+# Shell + script: DEVONO essere LF (CRLF rompe su Linux/Mac)
+*.sh          text eol=lf
+*.bash        text eol=lf
+Dockerfile    text eol=lf
+Dockerfile.*  text eol=lf
+
+# Husky hooks: senza estensione, sempre LF
+.husky/*      text eol=lf
+
+# Config CI/CD
+.editorconfig  text eol=lf
+.gitignore     text eol=lf
+.gitattributes text eol=lf
+.npmrc         text eol=lf
+.nvmrc         text eol=lf
+
+# SQL migrations
+*.sql         text eol=lf
+
+# Lockfile (LF, deve essere stabile cross-OS)
+pnpm-lock.yaml    text eol=lf -diff merge=binary
+package-lock.json text eol=lf -diff
+yarn.lock         text eol=lf -diff
+
+# Binari (no diff, no normalize)
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.ico    binary
+*.webp   binary
+*.avif   binary
+*.pdf    binary
+*.zip    binary
+*.tar.gz binary
+*.tgz    binary
+*.woff   binary
+*.woff2  binary
+*.ttf    binary
+*.eot    binary
+*.otf    binary
+*.mp3    binary
+*.mp4    binary
+*.webm   binary
+*.mov    binary
+*.wasm   binary
+*.node   binary
+
+# Generato — collassa diff in PR (GitHub li nasconde di default)
+pnpm-lock.yaml linguist-generated=true
+*.min.js       linguist-generated=true
+*.min.css      linguist-generated=true

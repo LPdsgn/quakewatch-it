@@ -1,0 +1,105 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+package-lock.json
+
+# testing
+coverage/
+
+# playwright
+playwright-report/
+playwright/.cache/
+.auth/
+test-results/
+.playwright-mcp/
+
+# next.js
+.next/
+out/
+next-env.d.ts
+
+# expo
+# Nota: le cartelle native /ios e /android andranno ignorate da apps/mobile/.gitignore
+# (pattern ancorati). NON ripeterle qui non ancorate: `ios/` matcherebbe a qualsiasi
+# profondità, catturando anche cartelle web legittime.
+.expo/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# build output
+dist/
+build/
+.vercel
+
+# generated types
+.astro/
+
+# typescript
+*.tsbuildinfo
+
+# turbo
+.turbo/
+
+# environment variables
+.env
+.env.*
+.env*.local
+!.env.example
+
+# logs / debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Optional eslint cache
+.eslintcache
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+/Icon?
+
+# Editor files
+*.swp
+*.swo
+*~
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Temporary files
+*.tmp
+.tmp*
+*.temp
+*.cache
+tmp/
+.shtmp/
+
+# misc
+*.pem
+.copilot-skill-bridge.json
+
+# Claude Code settings
+.claude/*
+.claude/settings.local.json
+# impostazioni e MCP condivisi committabili
+!.claude/settings.json
+!.claude/.mcp.json
+# rules/ + skills/ committabili (regole di sviluppo condivise)
+!.claude/rules/
+!.claude/skills/
+
+# scripts locali (non condivisi, es. SQL ad hoc per DB locale)
+scripts/local/
