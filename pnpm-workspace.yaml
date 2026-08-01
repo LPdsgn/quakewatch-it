@@ -1,3 +1,22 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+
+# Equivalente di satus' package.json#trustedDependencies. Lista verificata
+# sull'output reale di `pnpm install` ("ignored build scripts"), non copiata
+# da satus: qui @tailwindcss/oxide non compare, perché non ha uno script di
+# build da approvare in questo repo.
+#
+# NOTA (verificato empiricamente, pnpm@10.0.0 pinnato in packageManager):
+# l'installer avvisa che il campo "pnpm" di package.json non viene più letto
+# e indica pnpm-workspace.yaml come nuova sede — ma su un `pnpm install` da
+# node_modules vuoti, in questa esatta versione, il warning "ignored build
+# scripts" per esbuild/lefthook/sharp compare comunque, sia con la chiave qui
+# sotto sia senza. Non è quindi (ancora) sufficiente da sola a farlo sparire;
+# serve un `pnpm rebuild` una tantum dopo l'install per completare i build
+# nativi in locale. Tenuta comunque qui perché è la sede corretta indicata da
+# pnpm stesso ed è innocua; da ri-verificare a un upgrade di pnpm.
+onlyBuiltDependencies:
+  - esbuild
+  - lefthook
+  - sharp
