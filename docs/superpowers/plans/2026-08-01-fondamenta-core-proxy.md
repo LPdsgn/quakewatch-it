@@ -1619,3 +1619,25 @@ git commit -m "Fondamenta: verifica end-to-end proxy contro API INGV"
 ## Fuori scope di questo piano (→ Piani 2 e 3)
 
 `packages/tokens` e theming, UI (mappa, sidebar, timeline, expert panel), pagine `/evento/[id]` e `/info`, polling client TanStack Query, deploy Vercel. Il contratto JSON dei due endpoint (`Interfaces` dei Task 11–12) è l'input del Piano 2.
+
+---
+
+## Esito esecuzione (2026-08-01) e debito differito per il Piano 2
+
+Eseguito con subagent-driven-development: 13/13 task completati (commit 3122971..04384b1), review per-task + review finale del branch (verdetto: mergeable dopo fix wave 04384b1 — cache-control su 404/502, timeout fetch). Test finali: 49 (33 core + 16 web), lint/format/type-aware puliti, e2e verificata live contro INGV.
+
+**Da fare a inizio Piano 2 (task "riconciliazione infra", obbligatorio prima della UI):**
+
+- `apps/web/tsconfig.json` deve estendere `tsconfig.base.json` (oggi manca `noUncheckedIndexedAccess`)
+- Script `typecheck` (tsc --noEmit) wired a livello root + `@types/node` in packages/core; `@types/node` in web da ^20 a ^22; `typescript` ^5 → ^5.7.0 in web
+- Pulizia boilerplate create-next-app (README, page.tsx, svg, metadata "Create Next App", `lang="en"` → `it`)
+- Commento in `oxfmt.config.ts` contraddice la config reale (dice 80col/2spazi/no-semi, config è 100/tab) — allineare il commento
+
+**Test-gap da colmare quando si tocca il modulo relativo (non bloccanti):**
+
+- `normalizeUtcTime`: Z+microsecondi insieme; frazioni <3 cifre; boundary esatto del minuto in `canonicalWindowRange`
+- `parse-text`: rami NaN-discard con 13+ campi; validazione del campo Time (oggi non validato: un Time corrotto produce `"garbageZ"`)
+- `parse-quakeml`: rami fallback preferred-ID e catch XML malformato
+- `dedup`: eventId duplicato nello stesso incoming; nota `toSorted` = ES2023 (ok Node≥22, valutare per browser in Piano 2)
+- `fdsn-client`: baseUrl con trailing slash/sub-path
+- route events: body errore 400; window+area entrambi invalidi; query param sconosciuti frammentano la cache key CDN (documentare/normalizzare per il porting Cloudflare)
