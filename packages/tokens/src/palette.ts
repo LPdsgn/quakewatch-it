@@ -34,3 +34,18 @@ export const STATUS = {
 
 export const TEXT_DARK = { primary: 'hsl(0 0% 93%)', secondary: 'hsl(0 0% 54%)' } as const
 export const TEXT_LIGHT = { primary: 'hsl(0 0% 7%)', secondary: 'hsl(0 0% 38%)' } as const
+
+/** Map tile styles per tema. Dark: terra > acqua (contrasto); light: schema classico carta. */
+export const MAP_DARK = {
+	land: 'hsl(0 0% 8.5%)',
+	water: 'hsl(0 0% 4%)',
+	boundaryCountry: 'rgba(255,255,255,0.28)',
+	boundaryRegion: 'rgba(255,255,255,0.10)',
+} as const
+
+export const MAP_LIGHT = {
+	land: 'hsl(0 0% 94%)',
+	water: 'hsl(0 0% 85%)',
+	boundaryCountry: 'rgba(0,0,0,0.35)',
+	boundaryRegion: 'rgba(0,0,0,0.12)',
+} as const
