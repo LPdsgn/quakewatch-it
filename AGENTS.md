@@ -25,7 +25,7 @@ Scelte chiuse — non rimetterle in discussione senza richiesta esplicita:
 
 - Next.js e non SvelteKit (condivisione codice con React Native in Fase 2)
 - Monorepo Next.js + Expo, **non** universal app con react-native-web (SEO pagine evento)
-- Mappe: **MapLibre GL** via **react-map-gl** (visgl) + tile gratuiti (OpenFreeMap/Protomaps), zero costi licenza — confermata 2026-08 dopo valutazione Mapbox
+- Mappe: **MapLibre GL** via **react-map-gl** (visgl) + tile gratuiti (OpenFreeMap/Protomaps), zero costi licenza — confermata 2026-08 dopo valutazione Mapbox. **`maplibre-gl` pinnata a `^5`**: la v6 (ESM-only, worker in chunk separato) non carica le sorgenti sotto Next 16 + react-map-gl 8.1 — fallimento silenzioso, verificato empiricamente 2026-08 (v5 CDN ok, v6 no); rivalutare quando react-map-gl dichiarerà il supporto v6
 - Niente backend/DB proprio, niente CMS/WordPress: l'API INGV è la sola fonte
 - Polling HTTP, non WebSocket (l'API è query-only); finestra sovrapposta 5–15 min
 - Per i repo INGV: MCP server via Docker/`.mcp.json`, spec OpenAPI via raw URL pinnata a SHA (dettagli in `docs/risorse-esterne.md`)

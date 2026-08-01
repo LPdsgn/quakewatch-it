@@ -37,21 +37,23 @@ const MAP_STYLE: StyleSpecification = {
 		openfreemap: { type: 'vector', url: 'https://tiles.openfreemap.org/planet' },
 	},
 	layers: [
-		{ id: 'background', type: 'background', paint: { 'background-color': '#0a0a0a' } },
+		// terra più chiara dell'acqua: è il contrasto che rende leggibile la costa
+		{ id: 'background', type: 'background', paint: { 'background-color': '#161616' } },
 		{
 			id: 'water',
 			type: 'fill',
 			source: 'openfreemap',
 			'source-layer': 'water',
-			paint: { 'fill-color': '#060606' },
+			paint: { 'fill-color': '#0a0a0a' },
 		},
 		{
 			id: 'boundary-country',
 			type: 'line',
 			source: 'openfreemap',
 			'source-layer': 'boundary',
-			filter: ['==', ['get', 'admin_level'], 2],
-			paint: { 'line-color': 'rgba(255,255,255,0.12)', 'line-width': 1 },
+			// maritime=0: esclude i confini marittimi (cerchi/archi in mare aperto)
+			filter: ['all', ['==', ['get', 'admin_level'], 2], ['==', ['get', 'maritime'], 0]],
+			paint: { 'line-color': 'rgba(255,255,255,0.28)', 'line-width': 1 },
 		},
 		{
 			id: 'boundary-region',
@@ -59,7 +61,7 @@ const MAP_STYLE: StyleSpecification = {
 			source: 'openfreemap',
 			'source-layer': 'boundary',
 			filter: ['==', ['get', 'admin_level'], 4],
-			paint: { 'line-color': 'rgba(255,255,255,0.06)', 'line-width': 1 },
+			paint: { 'line-color': 'rgba(255,255,255,0.10)', 'line-width': 1 },
 		},
 	],
 }
@@ -91,11 +93,15 @@ export function PrototypeShell({
 	const [win, setWin] = useState<Win>('24h')
 	const [events, setEvents] = useState<Earthquake[]>([])
 	const [selectedId, setSelectedId] = useState<string | null>(null)
-	const [now, setNow] = useState(() => Date.now())
+	// null fino al mount: Date.now() in SSR causa hydration mismatch (orologio)
+	const [now, setNow] = useState<number | null>(null)
 	const mapRef = useRef<MapRef | null>(null)
 
 	useEffect(() => {
+		setNow(Date.now())
 		const id = setInterval(() => setNow(Date.now()), 1000)
+		// PROTOTIPO: debug — il ref c'è dal mount, anche se 'load' non scatta
+		;(window as unknown as Record<string, unknown>).__mapref = mapRef
 		return () => clearInterval(id)
 	}, [])
 
@@ -132,7 +138,7 @@ export function PrototypeShell({
 		() => ({
 			type: 'FeatureCollection' as const,
 			features: events.map((e) => {
-				const ageHours = (now - new Date(e.time).getTime()) / 3_600_000
+				const ageHours = ((now ?? Date.now()) - new Date(e.time).getTime()) / 3_600_000
 				const isHighlight = e.eventId === highlightId
 				const opacity = isHighlight
 					? 1
@@ -156,7 +162,7 @@ export function PrototypeShell({
 		mapRef.current?.flyTo({ center: [e.longitude, e.latitude], zoom: 8, duration: 800 })
 	}
 
-	const clock = new Date(now).toLocaleTimeString('it-IT', { hour12: false })
+	const clock = now === null ? '—' : new Date(now).toLocaleTimeString('it-IT', { hour12: false })
 	const emptyLabel = `Nessun evento nelle ultime ${win === '24h' ? '24h' : '7 giorni'}`
 
 	return (
@@ -289,7 +295,7 @@ export function PrototypeShell({
 											className="shrink-0 text-[11px] text-[#8a8a8a]"
 											style={{ fontFamily: 'var(--font-mono)', ...tnum }}
 										>
-											{relTime(e.time, now)}
+											{now === null ? '' : relTime(e.time, now)}
 										</span>
 										<span
 											className="w-16 shrink-0 text-right text-[11px] text-[#8a8a8a]"
@@ -320,6 +326,14 @@ export function PrototypeShell({
 					initialViewState={{ longitude: 12.5, latitude: 42.3, zoom: 5.3 }}
 					mapStyle={MAP_STYLE}
 					style={{ width: '100%', height: '100%' }}
+					onLoad={(e) => {
+						// PROTOTIPO: debug hook per ispezione da console
+						;(window as unknown as Record<string, unknown>).__map = e.target
+					}}
+					onError={(e) => {
+						// PROTOTIPO: gli errori maplibre non arrivano in console da soli
+						console.error('MAPLIBRE ERROR:', e.error?.message ?? e)
+					}}
 				>
 					<Source id="events" type="geojson" data={geojson}>
 						<Layer
