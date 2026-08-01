@@ -42,4 +42,4 @@ Il design v1 del web (UI, token, data flow, stati) è specificato in `docs/super
 
 ## Regole
 
-Regole aggiuntive in `.claude/rules/` — in particolare l'**iter di design e sviluppo** in `.claude/rules/iter-sviluppo.md` (fasi, skill da usare, review obbligatorie). Gli agent diversi da Claude Code devono leggerle comunque: valgono per tutti.
+Regole aggiuntive in `.agents/rules/` (symlinkate in `.claude/rules/` per Claude Code) — in particolare l'**iter di design e sviluppo** in `.agents/rules/iter-sviluppo.md` (fasi, skill da usare, review obbligatorie). Gli agent diversi da Claude Code devono leggerle comunque: valgono per tutti.
