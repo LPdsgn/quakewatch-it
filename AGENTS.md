@@ -18,18 +18,20 @@ Tutto il necessario sull'API INGV è in `docs/api-web-services.md` (endpoint, pa
 
 Monorepo React a fasi:
 
-- **Fase 1 (attuale)**: web con **Next.js** + proxy edge **Cloudflare Pages/Workers** con cache condivisa (N utenti = 1 req/min verso INGV). Strutturare da subito come monorepo con `packages/core` (TS puro: client FDSN, parsing text/QuakeML, dedup per `eventid`, logica revisioni, tipi, hook TanStack Query).
+- **Fase 1 (attuale)**: web con **Next.js**, deploy iniziale su **Vercel** (revisione 2026-08 della scelta Cloudflare, su richiesta esplicita); proxy = Route Handler Next.js con cache CDN condivisa e semantica HTTP standard, portabile a Cloudflare Workers in futuro (N utenti = 1 req/min verso INGV). Strutturare da subito come monorepo con `packages/core` (TS puro: client FDSN, parsing text/QuakeML, dedup per `eventid`, logica revisioni, tipi, hook TanStack Query).
 - **Fase 2 (dopo validazione del web)**: app mobile **Expo** che riusa `packages/core`; notifiche push via Cron Trigger sul Worker + Expo Push API. Non anticipare lavoro di Fase 2.
 
 Scelte chiuse — non rimetterle in discussione senza richiesta esplicita:
 
 - Next.js e non SvelteKit (condivisione codice con React Native in Fase 2)
 - Monorepo Next.js + Expo, **non** universal app con react-native-web (SEO pagine evento)
-- Mappe: **MapLibre GL** + tile gratuiti (OpenFreeMap/Protomaps), zero costi licenza
+- Mappe: **MapLibre GL** via **react-map-gl** (visgl) + tile gratuiti (OpenFreeMap/Protomaps), zero costi licenza — confermata 2026-08 dopo valutazione Mapbox
 - Niente backend/DB proprio, niente CMS/WordPress: l'API INGV è la sola fonte
 - Polling HTTP, non WebSocket (l'API è query-only); finestra sovrapposta 5–15 min
 - Per i repo INGV: MCP server via Docker/`.mcp.json`, spec OpenAPI via raw URL pinnata a SHA (dettagli in `docs/risorse-esterne.md`)
 - Niente template/starter per `apps/web` (valutati e scartati satus e basement next-typescript): `create-next-app` liscio + solo il necessario (TanStack Query, MapLibre GL, Zod). Da satus si copiano idee, non il repo: TS strict, oxlint/oxfmt, validazione env con Zod
+
+Il design v1 del web (UI, token, data flow, stati) è specificato in `docs/superpowers/specs/2026-08-01-quakewatch-web-v1-design.md`.
 
 ## Vincoli non negoziabili
 
@@ -40,4 +42,4 @@ Scelte chiuse — non rimetterle in discussione senza richiesta esplicita:
 
 ## Regole
 
-Regole aggiuntive in `.claude/rules/` (verranno popolate durante lo sviluppo). Gli agent diversi da Claude Code devono leggerle comunque: valgono per tutti.
+Regole aggiuntive in `.claude/rules/` — in particolare l'**iter di design e sviluppo** in `.claude/rules/iter-sviluppo.md` (fasi, skill da usare, review obbligatorie). Gli agent diversi da Claude Code devono leggerle comunque: valgono per tutti.
