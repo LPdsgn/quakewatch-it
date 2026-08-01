@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error"
+  },
+  "rules": {},
+  "env": {
+    "builtin": true
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/.next/**",
+    "apps/web/next-env.d.ts",
+    "packages/core/test/fixtures/**",
+    ".superpowers/**",
+    ".claude/**"
+  ],
+  "overrides": [
+    {
+      "files": ["apps/web/**/*.ts", "apps/web/**/*.tsx"],
+      "plugins": ["react", "nextjs"],
+      "rules": {
+        // Next.js 16 usa il runtime JSX automatico (jsx: "react-jsx"):
+        // `React` non deve essere in scope, la regola classica è un
+        // falso positivo su questo setup.
+        "react/react-in-jsx-scope": "off"
+      }
+    }
+  ]
+}

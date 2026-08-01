@@ -1,0 +1,10 @@
+{
+  "ignorePatterns": [
+    "apps/web/next-env.d.ts",
+    "packages/core/test/fixtures/**",
+    ".superpowers/**",
+    ".claude/**",
+    ".agents/**",
+    "docs/**"
+  ]
+}

@@ -1,0 +1,17 @@
+# Configurazione lefthook (git hooks). Cross-platform: Windows, macOS, Linux.
+# https://github.com/evilmartians/lefthook
+#
+# Pattern ispirato a darkroomengineering/satus (lefthook + oxlint/oxfmt,
+# nessun tool aggiuntivo tipo lint-staged: {staged_files} e stage_fixed sono
+# nativi di lefthook).
+
+pre-commit:
+  parallel: true
+  commands:
+    oxc:
+      glob: "*.{ts,tsx,js,jsx,mjs,cjs}"
+      # oxlint blocca il commit se fallisce (niente --fix: non deve alterare
+      # la logica). Solo se il lint passa gira oxfmt in scrittura; i file
+      # vengono ri-aggiunti allo stage da `stage_fixed`.
+      run: pnpm exec oxlint --no-error-on-unmatched-pattern {staged_files} && pnpm exec oxfmt --write --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
