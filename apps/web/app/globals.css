@@ -72,6 +72,16 @@ body {
 	font-feature-settings: 'tnum' 1, 'zero' 1;
 }
 
+/* Texture per i pannelli placeholder (mappa T10, timeline T3, liste vuote): mai hex, solo token. */
+.dot-grid {
+	background-image: radial-gradient(
+		circle,
+		color-mix(in oklch, var(--foreground) 8%, transparent) 1px,
+		transparent 1px
+	);
+	background-size: 14px 14px;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
