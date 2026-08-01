@@ -819,7 +819,7 @@ describe('serializeAppState', () => {
 - Consumes: `useEventsQuery` (T6), `parseAppState`/`serializeAppState` (T7), `AREA_PRESETS` (core), componenti shadcn (T5)
 - Produces: home funzionante con dati live e geometria del prototipo; `home-client.tsx` possiede lo stato (URL) e passa props tipizzate ai panes: `<Summary events={Earthquake[]} isLoading={boolean} />`, `<AreaPreset area={string} window={TimeWindow} onChange={(area, window) => void} />`, `<TimelineSlot />`. La lista (T9), la mappa (T10) e il dettaglio (T11) si innestano qui.
 
-Requisiti (geometria dal prototipo approvato, componenti dal design system):
+- [ ] **Step implementazione** — requisiti (geometria dal prototipo approvato, componenti dal design system):
 
 - `page.tsx` server component minimale che monta `<HomeClient />` (Suspense boundary per `useSearchParams`)
 - `home-client.tsx`: legge lo stato da URL (T7) con `useSearchParams`, lo scrive con `router.replace('?' + serializeAppState(...), { scroll: false })`; grid `360px 1fr` / rows `1fr 72px`, aree `sidebar map / sidebar timeline`; sotto `md` la sidebar sparisce (il T12 porta il bottom sheet — fino ad allora mobile = solo mappa, accettabile in corso di piano)
@@ -830,7 +830,7 @@ Requisiti (geometria dal prototipo approvato, componenti dal design system):
 - TimelineSlot: pane dot-grid con label mono `TIMELINE` — placeholder dichiarato per il Piano 3
 - Empty state (0 eventi): pane dot-grid con copy neutro (`Nessun evento M≥2 negli ultimi 30 giorni` a seconda della finestra — soglia solo per 30d/90d)
 
-**Verifica:** visiva nel browser (1440, 1024, 768) coi 3 preset e le 4 finestre; test esistenti + typecheck + lint verdi. **Commit:** `web: shell con header, riepilogo, preset e footer su dati live`
+- [ ] **Step verifica:** visiva nel browser (1440, 1024, 768) coi 3 preset e le 4 finestre; test esistenti + typecheck + lint verdi. **Commit:** `web: shell con header, riepilogo, preset e footer su dati live`
 
 ---
 
@@ -844,14 +844,14 @@ Requisiti (geometria dal prototipo approvato, componenti dal design system):
 - Consumes: `Earthquake`, stato URL (event selezionato = `state.event`)
 - Produces: `<EventList events sorted desc, selectedId, onSelect(eventId) />`; selezione scritta in URL (T7). Il T10 la sincronizza con la mappa, il T11 apre il dettaglio.
 
-Requisiti:
+- [ ] **Step implementazione** — requisiti:
 
 - ScrollArea shadcn, righe: magnitudo (mono 15px, `text-primary` SOLO per riga selezionata o evento più recente — disciplina accento), località (13px, truncate), tempo relativo (mono 11px, aggiornato con l'orologio del T8), profondità `X.X km` (mono 11px)
 - **Deviazione documentata dalla spec §2:** nessun badge PRELIMINARE/RIVISTO nelle righe — lo stato revisioni esiste solo nel dettaglio QuakeML (un fetch per evento: insostenibile per la lista). Il badge vive nel dettaglio (T11). Aggiornare la spec con una riga in coda al task.
 - Keyboard: righe focusabili (`button`), Enter seleziona; `aria-current` sulla selezionata
 - Ora locale italiana nel `title` della riga (tooltip nativo)
 
-**Verifica:** visiva (selezione, scroll con 79+ eventi Campi Flegrei 7g, empty state), typecheck/lint. **Commit:** `web: lista eventi con selezione in URL`
+- [ ] **Step verifica:** visiva (selezione, scroll con 79+ eventi Campi Flegrei 7g, empty state), typecheck/lint. **Commit:** `web: lista eventi con selezione in URL`
 
 ---
 
@@ -865,7 +865,7 @@ Requisiti:
 - Consumes: `buildMapStyle` (T3, tema da `useTheme` di next-themes — `resolvedTheme` mappato a `ThemeName`), eventi + selectedId + onSelect dal T8/T9
 - Produces: `<QuakeMap events selectedId onSelect(eventId) />` — mappa theme-aware con layer epicentri
 
-Requisiti (anatomia validata dal prototipo, skin dai token):
+- [ ] **Step implementazione** — requisiti (anatomia validata dal prototipo, skin dai token):
 
 - `mapStyle={useMemo(() => buildMapStyle(theme), [theme])}`; centro Italia `[12.5, 42.3]` zoom 5.3; `maxBounds` ragionevoli sull'Italia allargata (evita pan verso l'Atlantico)
 - Layer circle GeoJSON: raggio `3 + magnitude * 2.2`; colore: selezionato → `RED[500]` dai token (passato via proprietà feature, MAI hardcoded hex), altri → neutro con opacity decrescente per età (1 → 0.35 oltre 12h); stroke scuro sottile
@@ -874,7 +874,7 @@ Requisiti (anatomia validata dal prototipo, skin dai token):
 - Il GeoJSON si ricalcola SOLO su cambio eventi/selezione (useMemo) — non a ogni tick dell'orologio (lezione prototipo: niente churn di `setData`)
 - Attribution control MapLibre visibile (obbligo licenza tile) — non sovrapporre il TimelineSlot
 
-**Verifica:** visiva su entrambi i temi (dark E light — lo stile cambia con `resolvedTheme`), click marker↔lista sincronizzati, pulse solo su 24h, reduced-motion rispettato (emula da devtools). **Commit:** `web: mappa MapLibre theme-aware con epicentri e selezione sincronizzata`
+- [ ] **Step verifica:** visiva su entrambi i temi (dark E light — lo stile cambia con `resolvedTheme`), click marker↔lista sincronizzati, pulse solo su 24h, reduced-motion rispettato (emula da devtools). **Commit:** `web: mappa MapLibre theme-aware con epicentri e selezione sincronizzata`
 
 ---
 
@@ -888,7 +888,7 @@ Requisiti (anatomia validata dal prototipo, skin dai token):
 - Consumes: `useEventDetailQuery(state.event)` (T6), stato URL
 - Produces: pannello che scorre sopra la lista quando `event !== null` (nella stessa colonna sidebar), back button che azzera `event` nell'URL
 
-Requisiti:
+- [ ] **Step implementazione** — requisiti:
 
 - Layout: stessa geometria pane; back (`←` + `Indietro`), poi: magnitudo grande mono con tipo (`Md 2.2`), badge `PRELIMINARE` (border neutro) o `RIVISTO` (border `--success`), località, tempo (locale italiana + riga UTC esplicita), coordinate mono, profondità
 - Storico revisioni (se `hasRevisions`): lista origin/magnitudes con i valori precedenti in `line-through` + `--muted-foreground`, il preferito evidenziato — dati già forniti dal proxy (T12 Piano 1)
@@ -896,7 +896,7 @@ Requisiti:
 - Stati: skeleton in loading; errore/404 con copy neutro e back funzionante (mai bloccare l'utente nel pannello)
 - La riga di disclaimer dati preliminari resta visibile (footer sidebar non coperto)
 
-**Verifica:** visiva con l'evento 46608102 (4 origins reali) e con un evento recentissimo (probabilmente 1 origin); deep-link diretto `/?event=46608102` apre il dettaglio al load. **Commit:** `web: dettaglio evento con storico revisioni e stato preliminare/rivisto`
+- [ ] **Step verifica:** visiva con l'evento 46608102 (4 origins reali) e con un evento recentissimo (probabilmente 1 origin); deep-link diretto `/?event=46608102` apre il dettaglio al load. **Commit:** `web: dettaglio evento con storico revisioni e stato preliminare/rivisto`
 
 ---
 
@@ -910,7 +910,7 @@ Requisiti:
 - Consumes: Drawer shadcn (vaul), tutti i panes esistenti (riusati identici dentro il sheet)
 - Produces: sotto `md`: mappa full-screen + chips riepilogo in alto + Drawer con snap points `[0.18, 0.5, 0.94]` (peek: riepilogo+ultimo evento; metà: lista; full: dettaglio quando selezionato)
 
-Requisiti:
+- [ ] **Step implementazione** — requisiti:
 
 - Breakpoint: `md` (768px) — sopra: layout T8 invariato; sotto: sidebar nascosta, sheet montato
 - I panes sono GLI STESSI componenti (nessuna versione mobile duplicata) ricomposti nel sheet
@@ -918,7 +918,7 @@ Requisiti:
 - Safe areas iOS: `viewportFit: 'cover'` già nel layout; padding con `env(safe-area-inset-bottom)` sul sheet
 - TimelineSlot: su mobile una strip compatta sopra il sheet o omessa con commento — decisione visiva dell'implementatore, motivata nel report
 
-**Verifica:** visiva 375×812 e 390×844 (emulazione devtools): snap points, selezione evento → sheet full col dettaglio, mappa navigabile col sheet in peek. **Commit:** `web: layout mobile con bottom sheet a snap point`
+- [ ] **Step verifica:** visiva 375×812 e 390×844 (emulazione devtools): snap points, selezione evento → sheet full col dettaglio, mappa navigabile col sheet in peek. **Commit:** `web: layout mobile con bottom sheet a snap point`
 
 ---
 
