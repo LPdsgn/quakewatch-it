@@ -1,7 +1,7 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@quakewatch/core"],
-};
+  transpilePackages: ['@quakewatch/core'],
+}
 
-export default nextConfig;
+export default nextConfig

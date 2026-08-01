@@ -9,7 +9,7 @@ pre-commit:
   parallel: true
   commands:
     oxc:
-      glob: "*.{ts,tsx,js,jsx,mjs,cjs}"
+      glob: '*.{ts,tsx,js,jsx,mjs,cjs}'
       # oxlint blocca il commit se fallisce (niente --fix: non deve alterare
       # la logica). Solo se il lint passa gira oxfmt in scrittura; i file
       # vengono ri-aggiunti allo stage da `stage_fixed`.
