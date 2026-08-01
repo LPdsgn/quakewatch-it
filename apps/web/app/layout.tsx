@@ -1,42 +1,44 @@
-import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import type { Metadata, Viewport } from 'next'
+import localFont from 'next/font/local'
 
 import './globals.css'
-import { cn } from '@/lib/utils'
+import { Providers } from './providers'
 
-const geistSans = Geist({
-	variable: '--font-geist-sans',
-	subsets: ['latin'],
+const sans = localFont({
+	src: [
+		{ path: '../assets/fonts/InterVariable.woff2', weight: '100 900', style: 'normal' },
+		{ path: '../assets/fonts/InterVariable-Italic.woff2', weight: '100 900', style: 'italic' },
+	],
+	variable: '--font-sans',
+	display: 'swap',
+	fallback: ['system-ui', 'sans-serif'],
 })
 
-const geistMono = Geist_Mono({
-	variable: '--font-geist-mono',
-	subsets: ['latin'],
+const mono = localFont({
+	src: [{ path: '../assets/fonts/JetBrains-Mono-VF.woff2', weight: '100 800', style: 'normal' }],
+	variable: '--font-mono',
+	display: 'swap',
+	fallback: ['ui-monospace', 'Consolas', 'monospace'],
 })
 
 export const metadata: Metadata = {
-	title: 'QuakeWatch',
+	title: { default: 'QuakeWatch', template: '%s · QuakeWatch' },
 	description:
 		"Monitoraggio sismico dell'Italia su dati INGV — Osservatorio Nazionale Terremoti. Dati preliminari soggetti a revisione.",
 }
 
-export default function RootLayout({
-	children,
-}: Readonly<{
-	children: React.ReactNode
-}>) {
+export const viewport: Viewport = {
+	width: 'device-width',
+	initialScale: 1,
+	viewportFit: 'cover',
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
-		<html
-			lang="it"
-			className={cn(
-				'h-full',
-				'antialiased',
-				geistSans.variable,
-				geistMono.variable,
-				'font-sans'
-			)}
-		>
-			<body className="min-h-full flex flex-col">{children}</body>
+		<html lang="it" suppressHydrationWarning className={`${sans.variable} ${mono.variable}`}>
+			<body>
+				<Providers>{children}</Providers>
+			</body>
 		</html>
 	)
 }
