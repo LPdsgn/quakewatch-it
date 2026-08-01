@@ -29,6 +29,7 @@ Scelte chiuse — non rimetterle in discussione senza richiesta esplicita:
 - Niente backend/DB proprio, niente CMS/WordPress: l'API INGV è la sola fonte
 - Polling HTTP, non WebSocket (l'API è query-only); finestra sovrapposta 5–15 min
 - Per i repo INGV: MCP server via Docker/`.mcp.json`, spec OpenAPI via raw URL pinnata a SHA (dettagli in `docs/risorse-esterne.md`)
+- Niente template/starter per `apps/web` (valutati e scartati satus e basement next-typescript): `create-next-app` liscio + solo il necessario (TanStack Query, MapLibre GL, Zod). Da satus si copiano idee, non il repo: TS strict, oxlint/oxfmt, validazione env con Zod
 
 ## Vincoli non negoziabili
 
