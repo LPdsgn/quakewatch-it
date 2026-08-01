@@ -939,6 +939,15 @@ Expected: tutto verde, build pulita
 
 ---
 
+## Aggiornamento pre-esecuzione (2026-08-02, vincolante)
+
+L'utente ha già eseguito `shadcn init` (components.json: style **base-nova** → engine **Base UI**, iconLibrary lucide, css `app/globals.css`, alias `@/components`, `@/lib/utils`). Conseguenze sui task:
+
+- **Task 2**: `SEMANTIC_TOKENS` emette ANCHE gli alias attesi da shadcn: `destructive` (= error), `destructive-foreground`, `ring` (= outline) e il set completo `sidebar-*` del tema base-nova (`sidebar`, `sidebar-foreground`, `sidebar-primary`, `sidebar-primary-foreground`, `sidebar-accent`, `sidebar-accent-foreground`, `sidebar-border`, `sidebar-ring`). Le `chart-1..5` (se referenziate dal CSS shadcn) ricevono valori neutri provvisori — la scala dataviz vera è Piano 3. Aggiorna il test dei token di conseguenza.
+- **Task 4**: il `globals.css` dell'init si CUSTOMIZZA, non si sostituisce in blocco: mantieni gli import generati (`tw-animate-css`, `shadcn/tailwind.css`) e il blocco `@theme inline`, ma (1) `@custom-variant dark` deve puntare a `.theme-dark` (spec §3), (2) `--font-geist-mono` → il nostro `--font-mono`, (3) i VALORI delle var vengono solo da `theme.css` generato (elimina eventuali blocchi `:root`/`.dark` con valori hardcoded dell'init), (4) niente palette parallela.
+- **Task 5**: l'init è GIÀ fatto — il task diventa: aggiungere i componenti richiesti (verificando i nomi nel registry base-nova), verificare che leggano i nostri token e customizzare dove serve. Il controller carica la skill `shadcn` e distilla le istruzioni rilevanti nel brief.
+- **Engine Base UI**: i componenti base-nova non usano Radix — non "correggere" gli import verso Radix.
+
 ## Decisioni chiuse in stesura (non ridiscutere nei task)
 
 - next-themes per lo switch tema (attribute class + value mapping `theme-dark`/`theme-light`)
