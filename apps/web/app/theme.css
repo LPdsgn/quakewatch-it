@@ -1,0 +1,95 @@
+/* GENERATO da packages/tokens — NON EDITARE. `pnpm --filter @quakewatch/tokens build:css` */
+
+:root,
+.theme-dark {
+	--background: hsl(0 0% 4%);
+	--foreground: hsl(0 0% 93%);
+	--card: hsl(0 0% 7.5%);
+	--card-foreground: hsl(0 0% 93%);
+	--popover: hsl(0 0% 11%);
+	--popover-foreground: hsl(0 0% 93%);
+	--primary: hsl(355 85% 55%);
+	--primary-foreground: hsl(0 0% 100%);
+	--secondary: hsl(0 0% 11%);
+	--secondary-foreground: hsl(0 0% 93%);
+	--muted: hsl(0 0% 16%);
+	--muted-foreground: hsl(0 0% 54%);
+	--accent: hsl(0 0% 16%);
+	--accent-foreground: hsl(0 0% 93%);
+	--border: hsl(0 0% 22%);
+	--input: hsl(0 0% 22%);
+	--outline: hsl(355 85% 55%);
+	--error: hsl(0 55% 42%);
+	--error-foreground: hsl(0 0% 100%);
+	--warning: hsl(45 90% 50%);
+	--warning-foreground: hsl(45 100% 15%);
+	--success: hsl(150 40% 42%);
+	--success-foreground: hsl(0 0% 100%);
+	--info: hsl(205 60% 55%);
+	--info-foreground: hsl(205 80% 12%);
+	--sidebar-background: hsl(0 0% 5.5%);
+	--sidebar-border: hsl(0 0% 22%);
+	--radius: 0.75rem;
+	--destructive: hsl(0 55% 42%);
+	--destructive-foreground: hsl(0 0% 100%);
+	--ring: hsl(355 85% 55%);
+	--sidebar: hsl(0 0% 5.5%);
+	--sidebar-foreground: hsl(0 0% 93%);
+	--sidebar-primary: hsl(355 85% 55%);
+	--sidebar-primary-foreground: hsl(0 0% 100%);
+	--sidebar-accent: hsl(0 0% 16%);
+	--sidebar-accent-foreground: hsl(0 0% 93%);
+	--sidebar-ring: hsl(355 85% 55%);
+	--chart-1: hsl(0 0% 16%);
+	--chart-2: hsl(0 0% 22%);
+	--chart-3: hsl(0 0% 11%);
+	--chart-4: hsl(0 0% 7.5%);
+	--chart-5: hsl(0 0% 5.5%);
+}
+
+.theme-light {
+	--background: hsl(0 0% 96%);
+	--foreground: hsl(0 0% 7%);
+	--card: hsl(0 0% 89%);
+	--card-foreground: hsl(0 0% 7%);
+	--popover: hsl(0 0% 84%);
+	--popover-foreground: hsl(0 0% 7%);
+	--primary: hsl(355 85% 55%);
+	--primary-foreground: hsl(0 0% 100%);
+	--secondary: hsl(0 0% 84%);
+	--secondary-foreground: hsl(0 0% 7%);
+	--muted: hsl(0 0% 77%);
+	--muted-foreground: hsl(0 0% 38%);
+	--accent: hsl(0 0% 77%);
+	--accent-foreground: hsl(0 0% 7%);
+	--border: hsl(0 0% 68%);
+	--input: hsl(0 0% 68%);
+	--outline: hsl(355 85% 55%);
+	--error: hsl(0 55% 42%);
+	--error-foreground: hsl(0 0% 100%);
+	--warning: hsl(45 90% 50%);
+	--warning-foreground: hsl(45 100% 15%);
+	--success: hsl(150 40% 42%);
+	--success-foreground: hsl(0 0% 100%);
+	--info: hsl(205 60% 55%);
+	--info-foreground: hsl(205 80% 12%);
+	--sidebar-background: hsl(0 0% 93%);
+	--sidebar-border: hsl(0 0% 68%);
+	--radius: 0.75rem;
+	--destructive: hsl(0 55% 42%);
+	--destructive-foreground: hsl(0 0% 100%);
+	--ring: hsl(355 85% 55%);
+	--sidebar: hsl(0 0% 93%);
+	--sidebar-foreground: hsl(0 0% 7%);
+	--sidebar-primary: hsl(355 85% 55%);
+	--sidebar-primary-foreground: hsl(0 0% 100%);
+	--sidebar-accent: hsl(0 0% 77%);
+	--sidebar-accent-foreground: hsl(0 0% 7%);
+	--sidebar-ring: hsl(355 85% 55%);
+	--chart-1: hsl(0 0% 77%);
+	--chart-2: hsl(0 0% 68%);
+	--chart-3: hsl(0 0% 84%);
+	--chart-4: hsl(0 0% 89%);
+	--chart-5: hsl(0 0% 93%);
+}
+
