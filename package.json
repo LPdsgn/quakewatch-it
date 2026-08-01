@@ -1,18 +1,21 @@
 {
   "name": "quakewatch-it",
   "private": true,
+  "type": "module",
   "scripts": {
     "test": "pnpm -r test",
-    "lint": "oxlint .",
-    "lint:fix": "oxlint --fix .",
-    "format": "oxfmt --write .",
-    "format:check": "oxfmt --check .",
+    "lint": "oxlint --report-unused-disable-directives --max-warnings=0",
+    "lint:fix": "oxlint --fix --fix-suggestions",
+    "lint:types": "oxlint --type-aware --max-warnings=0",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "prepare": "lefthook install"
   },
   "devDependencies": {
     "lefthook": "^2.1.10",
     "oxfmt": "^0.61.0",
     "oxlint": "^1.76.0",
+    "oxlint-tsgolint": "^7.0.2001",
     "typescript": "^5.7.0"
   },
   "engines": {
