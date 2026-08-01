@@ -65,6 +65,24 @@ describe('SEMANTIC_TOKENS', () => {
 			expect(SEMANTIC_TOKENS[t].primary).not.toEqual(SEMANTIC_TOKENS[t].error)
 		}
 	})
+
+	it('alias shadcn corrispondono esattamente ai token sorgente (non literal)', () => {
+		for (const t of THEME_NAMES) {
+			const tokens = SEMANTIC_TOKENS[t]
+			// destructive aliases
+			expect(tokens['destructive']).toBe(tokens['error'])
+			expect(tokens['destructive-foreground']).toBe(tokens['error-foreground'])
+			// ring alias
+			expect(tokens['ring']).toBe(tokens['outline'])
+			// sidebar aliases
+			expect(tokens['sidebar']).toBe(tokens['sidebar-background'])
+			expect(tokens['sidebar-primary']).toBe(tokens['primary'])
+			expect(tokens['sidebar-primary-foreground']).toBe(tokens['primary-foreground'])
+			expect(tokens['sidebar-accent']).toBe(tokens['accent'])
+			expect(tokens['sidebar-accent-foreground']).toBe(tokens['accent-foreground'])
+			expect(tokens['sidebar-ring']).toBe(tokens['outline'])
+		}
+	})
 })
 
 describe('generateThemeCss', () => {
