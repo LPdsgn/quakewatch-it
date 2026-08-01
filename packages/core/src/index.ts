@@ -7,3 +7,4 @@ export * from './parse-text';
 export * from './dedup';
 export * from './parse-quakeml';
 export * from './revisions';
+export * from './fdsn-client';
