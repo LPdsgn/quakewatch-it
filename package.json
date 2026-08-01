@@ -4,6 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"test": "pnpm -r test",
+		"typecheck": "pnpm -r typecheck",
 		"lint": "oxlint --report-unused-disable-directives --max-warnings=0",
 		"lint:fix": "oxlint --fix --fix-suggestions",
 		"lint:types": "oxlint --type-aware --max-warnings=0",

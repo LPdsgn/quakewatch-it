@@ -6,7 +6,8 @@
 		"dev": "next dev --turbopack",
 		"build": "next build",
 		"start": "next start",
-		"test": "vitest run"
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
 		"@base-ui/react": "^1.6.0",
@@ -27,12 +28,12 @@
 	"devDependencies": {
 		"@csstools/postcss-global-data": "^4.0.0",
 		"@tailwindcss/postcss": "^4",
-		"@types/node": "^20",
+		"@types/node": "^22",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
 		"postcss-preset-env": "^11.3.2",
 		"tailwindcss": "^4",
-		"typescript": "^5",
+		"typescript": "^5.7.0",
 		"vitest": "^3.0.0"
 	}
 }

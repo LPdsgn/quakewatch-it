@@ -6,10 +6,11 @@ import { defineConfig } from 'oxfmt'
  * File `.ts` invece di `.oxfmtrc.json`. Attenzione al nome: oxfmt fa
  * auto-discovery di `oxfmt.config.ts`, NON di `.oxfmtrc.ts`.
  *
- * House style satus: 80 colonne, indent 2 spazi, niente punti e virgola
- * salvo dove richiesti, apici singoli, trailing comma es5, LF. I default di
- * oxfmt differiscono (printWidth 100, semi true, singleQuote false,
- * trailingComma "all"), quindi ogni valore è esplicito.
+ * House style: 100 colonne, indent a tab (larghezza 3), niente punti e
+ * virgola salvo dove richiesti, apici singoli, trailing comma es5, LF. I
+ * default di oxfmt differiscono (printWidth 100 coincide, ma semi true,
+ * singleQuote false, trailingComma "all", useTabs false), quindi ogni valore
+ * resta esplicito.
  */
 export default defineConfig({
 	printWidth: 100,
