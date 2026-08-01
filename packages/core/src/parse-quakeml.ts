@@ -1,6 +1,6 @@
-import { XMLParser } from 'fast-xml-parser';
-import type { EventDetail, MagnitudeRevision, OriginRevision } from './types';
-import { normalizeUtcTime } from './windows';
+import { XMLParser } from "fast-xml-parser";
+import type { EventDetail, MagnitudeRevision, OriginRevision } from "./types";
+import { normalizeUtcTime } from "./windows";
 
 // fast-xml-parser converte automaticamente i valori numerici (es. depth, latitude);
 // gli orari e i publicID restano stringhe. Tipizziamo solo i campi che leggiamo.
@@ -9,7 +9,7 @@ interface RawTaggedValue {
 }
 
 interface RawOrigin {
-  '@_publicID'?: string;
+  "@_publicID"?: string;
   time?: RawTaggedValue;
   latitude?: RawTaggedValue;
   longitude?: RawTaggedValue;
@@ -18,13 +18,13 @@ interface RawOrigin {
 }
 
 interface RawMagnitude {
-  '@_publicID'?: string;
+  "@_publicID"?: string;
   mag?: RawTaggedValue;
   type?: string;
 }
 
 interface RawEvent {
-  '@_publicID'?: string;
+  "@_publicID"?: string;
   description?: { text?: string };
   preferredOriginID?: string;
   preferredMagnitudeID?: string;
@@ -43,7 +43,7 @@ interface RawQuakeml {
 const parser = new XMLParser({
   ignoreAttributes: false,
   removeNSPrefix: true,
-  isArray: (name) => name === 'event' || name === 'origin' || name === 'magnitude',
+  isArray: (name) => name === "event" || name === "origin" || name === "magnitude",
 });
 
 /** Estrae l'eventId numerico da un publicID INGV (es. "...?eventId=46608102"). */
@@ -54,28 +54,28 @@ function extractEventId(publicId: string): string {
 
 function parseOrigin(o: RawOrigin): OriginRevision {
   return {
-    publicId: String(o['@_publicID'] ?? ''),
-    time: normalizeUtcTime(String(o.time?.value ?? '')),
+    publicId: String(o["@_publicID"] ?? ""),
+    time: normalizeUtcTime(String(o.time?.value ?? "")),
     latitude: Number(o.latitude?.value),
     longitude: Number(o.longitude?.value),
     // QuakeML fornisce la profondità in metri: convertita in km per il resto dell'app.
     depthKm: Number(o.depth?.value) / 1000,
     evaluationMode:
-      o.evaluationMode === 'manual' || o.evaluationMode === 'automatic' ? o.evaluationMode : null,
+      o.evaluationMode === "manual" || o.evaluationMode === "automatic" ? o.evaluationMode : null,
   };
 }
 
 function parseMagnitude(m: RawMagnitude): MagnitudeRevision {
   return {
-    publicId: String(m['@_publicID'] ?? ''),
+    publicId: String(m["@_publicID"] ?? ""),
     value: Number(m.mag?.value),
-    type: String(m.type ?? ''),
+    type: String(m.type ?? ""),
   };
 }
 
 /** Parsa il QuakeML del dettaglio evento INGV (includeallorigins/includeallmagnitudes). */
 export function parseQuakemlEvent(xml: string): EventDetail | null {
-  if (xml.trim() === '') return null;
+  if (xml.trim() === "") return null;
 
   let doc: RawQuakeml;
   try {
@@ -94,12 +94,13 @@ export function parseQuakemlEvent(xml: string): EventDetail | null {
   const preferredOrigin =
     origins.find((o) => o.publicId === ev.preferredOriginID) ?? origins[origins.length - 1];
   const preferredMagnitude =
-    magnitudes.find((m) => m.publicId === ev.preferredMagnitudeID) ?? magnitudes[magnitudes.length - 1];
+    magnitudes.find((m) => m.publicId === ev.preferredMagnitudeID) ??
+    magnitudes[magnitudes.length - 1];
   if (!preferredOrigin || !preferredMagnitude) return null;
 
   return {
-    eventId: extractEventId(String(ev['@_publicID'] ?? '')),
-    locationName: String(ev.description?.text ?? ''),
+    eventId: extractEventId(String(ev["@_publicID"] ?? "")),
+    locationName: String(ev.description?.text ?? ""),
     preferredOrigin,
     preferredMagnitude,
     origins,

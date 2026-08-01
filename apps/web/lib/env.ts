@@ -1,7 +1,7 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 const schema = z.object({
-  INGV_BASE_URL: z.string().url().default('https://webservices.ingv.it'),
+  INGV_BASE_URL: z.string().url().default("https://webservices.ingv.it"),
 });
 
 /** Env validate al primo import: config rotta = crash all'avvio, non in produzione. */

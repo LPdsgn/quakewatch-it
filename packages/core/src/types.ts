@@ -20,7 +20,7 @@ export interface OriginRevision {
   longitude: number;
   /** In km (QuakeML fornisce metri: conversione nel parser). */
   depthKm: number;
-  evaluationMode: 'manual' | 'automatic' | null;
+  evaluationMode: "manual" | "automatic" | null;
 }
 
 /** Una stima di magnitudo (più d'una se rivista). */

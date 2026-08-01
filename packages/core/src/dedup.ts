@@ -1,4 +1,4 @@
-import type { Earthquake } from './types';
+import type { Earthquake } from "./types";
 
 /**
  * Unione con dedup per eventId (finestra di polling sovrapposta, spec §1).
@@ -8,5 +8,5 @@ import type { Earthquake } from './types';
 export function mergeEvents(existing: Earthquake[], incoming: Earthquake[]): Earthquake[] {
   const byId = new Map(existing.map((e) => [e.eventId, e]));
   for (const e of incoming) byId.set(e.eventId, e);
-  return [...byId.values()].sort((a, b) => b.time.localeCompare(a.time));
+  return [...byId.values()].toSorted((a, b) => b.time.localeCompare(a.time));
 }

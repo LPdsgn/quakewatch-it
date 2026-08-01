@@ -1,15 +1,15 @@
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
-import { parseQuakemlEvent } from '../src/parse-quakeml';
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { describe, expect, it } from "vitest";
+import { parseQuakemlEvent } from "../src/parse-quakeml";
 
 const xml = readFileSync(
-  fileURLToPath(new URL('./fixtures/event-detail.quakeml.xml', import.meta.url)),
-  'utf8',
+  fileURLToPath(new URL("./fixtures/event-detail.quakeml.xml", import.meta.url)),
+  "utf8",
 );
 
-describe('parseQuakemlEvent', () => {
-  it('estrae il dettaglio con tutte le revisioni dalla fixture reale', () => {
+describe("parseQuakemlEvent", () => {
+  it("estrae il dettaglio con tutte le revisioni dalla fixture reale", () => {
     const d = parseQuakemlEvent(xml);
     expect(d).not.toBeNull();
     if (!d) return;
@@ -25,11 +25,11 @@ describe('parseQuakemlEvent', () => {
     expect(d.locationName.length).toBeGreaterThan(0);
   });
 
-  it('XML non QuakeML → null', () => {
-    expect(parseQuakemlEvent('<html></html>')).toBeNull();
+  it("XML non QuakeML → null", () => {
+    expect(parseQuakemlEvent("<html></html>")).toBeNull();
   });
 
-  it('stringa vuota → null', () => {
-    expect(parseQuakemlEvent('')).toBeNull();
+  it("stringa vuota → null", () => {
+    expect(parseQuakemlEvent("")).toBeNull();
   });
 });
