@@ -29,6 +29,7 @@ Scelte chiuse — non rimetterle in discussione senza richiesta esplicita:
 - Niente backend/DB proprio, niente CMS/WordPress: l'API INGV è la sola fonte
 - Polling HTTP, non WebSocket (l'API è query-only); finestra sovrapposta 5–15 min
 - Per i repo INGV: MCP server via Docker/`.mcp.json`, spec OpenAPI via raw URL pinnata a SHA (dettagli in `docs/risorse-esterne.md`)
+- Animazioni: **GSAP** (skill in `.agents/skills/`), non framer-motion né motion/react. Componenti React di terze parti che animano con framer-motion si migrano a GSAP o si scartano
 - Niente template/starter per `apps/web` (valutati e scartati satus e basement next-typescript): `create-next-app` liscio + solo il necessario (TanStack Query, MapLibre GL, Zod). Da satus si copiano idee, non il repo: TS strict, oxlint/oxfmt, validazione env con Zod
 
 Il design v1 del web (UI, token, data flow, stati) è specificato in `docs/superpowers/specs/2026-08-01-quakewatch-web-v1-design.md`.

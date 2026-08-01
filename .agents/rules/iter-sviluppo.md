@@ -26,9 +26,10 @@ Brainstorming requisiti → esplorazione design → piano scritto → TDD su `pa
 
 - Esecuzione del piano con `superpowers:executing-plans`, oppure `superpowers:subagent-driven-development` per task paralleli indipendenti.
 - Knowledge skill mentre si scrive codice Next.js: `vercel:nextjs`, `vercel:react-best-practices`, `coding-rules:nextjs-tailwind`.
-  - **Attenzione**: del plugin vercel usare solo le skill di *conoscenza*, NON quelle di deploy (`vercel:deploy`, `cortex:vercel-deploy`): il deploy è su Cloudflare Pages/Workers (scelta chiusa in AGENTS.md).
+  - Deploy iniziale su **Vercel** (revisione 2026-08 in AGENTS.md): le skill di deploy del plugin vercel sono utilizzabili. Mantenere il proxy su semantica HTTP standard: la portabilità futura a Cloudflare Workers resta un requisito.
 - Verifica visiva iterativa nel browser (MCP chrome-devtools/playwright, `web-architect:web-screenshots`).
-- Polish quando serve: `cortex:loading-states` (stati di polling/attesa), `cortex:responsive-craft` (mappa + tabelle dati), `cortex:framer-motion` o `cortex:view-transitions` per il motion, `cortex:css-interaction-tips` per micro-interazioni.
+- Polish quando serve: `cortex:loading-states` (stati di polling/attesa), `cortex:responsive-craft` (mappa + tabelle dati), `cortex:css-interaction-tips` per micro-interazioni.
+- Motion: **GSAP** con le skill del repo (`gsap-core`, `gsap-react`, `gsap-timeline`, `gsap-scrolltrigger`, `gsap-performance`). **Non** usare `cortex:framer-motion` né proporre framer-motion/motion: scelta chiusa in AGENTS.md.
 
 ## Trasversali (sempre validi)
 
