@@ -1,8 +1,9 @@
-# Prototipo usa-e-getta — shell QuakeWatch
+# Prototipo shell — verdetto
 
-Domanda: le proporzioni e la densità della shell (sidebar panes + mappa
-monocroma + slot timeline) funzionano con dati reali?
+**Domanda:** le proporzioni e la densità della shell (sidebar panes 360px + mappa monocroma + slot timeline 72px) funzionano con dati reali?
 
-Route: `/prototype-shell`. Da eliminare (route + questo file) dopo il verdetto.
+**Verdetto (2026-08-02, utente):** la conformazione della shell va benissimo. Geometria e pattern a panes confermati; il contenuto interno dei singoli panes resta libero di evolvere durante il Piano 2 (verifica visiva iterativa).
 
-Verdetto:
+Scoperte collaterali (già committate): maplibre-gl pinnata ^5 (v6 rompe il worker, vedi AGENTS.md); contrasto terra>acqua necessario per la costa; filtro maritime=0 sui confini; orologio client-only (hydration).
+
+**Il prototipo si elimina nel Piano 2** (task dedicato) dopo che la shell reale lo sostituisce.
