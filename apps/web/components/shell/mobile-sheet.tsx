@@ -42,9 +42,13 @@ export function MobileSheet({
 	onSelectEvent,
 	onAreaWindowChange,
 }: MobileSheetProps) {
-	const [snapPoint, setSnapPoint] = useState<number>(PEEK)
+	// Init lazy sull'eventId iniziale: su deep-link con evento in URL evita il flash
+	// PEEK→FULL al primo render (altrimenti si vedrebbe un frame a peek prima dell'effect).
+	const [snapPoint, setSnapPoint] = useState<number>(() => (eventId !== null ? FULL : PEEK))
 
 	// Selezionare un evento porta il sheet a tutta altezza per mostrare il dettaglio.
+	// Il "indietro" (eventId → null) NON resetta lo snap point: scelta intenzionale, non
+	// svista — resta dov'era (in genere FULL) invece di risnappare a PEEK/HALF a sorpresa.
 	useEffect(() => {
 		if (eventId !== null) setSnapPoint(FULL)
 	}, [eventId])

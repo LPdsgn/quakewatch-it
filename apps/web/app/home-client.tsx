@@ -102,9 +102,11 @@ export function HomeClient() {
 			</div>
 
 			{/* Chips riepilogo mobile: overlay sopra la mappa (z-10: precede la mappa nel DOM, stesso
-			    grid cell), pointer-events-none tranne il contenuto. */}
+			    grid cell), pointer-events-none tranne il contenuto. Header qui perché sotto md
+			    non c'è sidebar: è l'unico modo di raggiungere il toggle tema (vincolo di piano). */}
 			<div className="pointer-events-none relative z-10 col-start-1 row-start-1 flex flex-col gap-2 p-2 pt-[env(safe-area-inset-top)] md:hidden">
-				<div className="pointer-events-auto">
+				<div className="pointer-events-auto flex flex-col gap-2">
+					<Header isLive={state.window === '24h'} nowMs={nowMs} />
 					<Summary events={events} isLoading={isLoading} />
 				</div>
 			</div>
