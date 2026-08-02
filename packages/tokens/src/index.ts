@@ -1,4 +1,5 @@
 export * from './palette'
 export * from './semantic'
+export * from './scales'
 export * from './generate-css'
 export * from './generate-map-style'
