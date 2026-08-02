@@ -16,6 +16,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { Layer, Map, Source, type MapRef } from 'react-map-gl/maplibre'
 
+import { toThemeName } from '@/lib/theme'
+
 export interface QuakeMapProps {
 	events: Earthquake[]
 	selectedId: string | null
@@ -33,10 +35,6 @@ const MAX_AGE_HOURS = 12
 const MIN_AGED_OPACITY = 0.35
 const PULSE_WINDOW_MS = 24 * 3_600_000
 const PULSE_CYCLE_MS = 2400
-
-function toThemeName(resolvedTheme: string | undefined): ThemeName {
-	return resolvedTheme === 'light' ? 'theme-light' : 'theme-dark'
-}
 
 export function QuakeMap({ events, selectedId, onSelect, isLive }: QuakeMapProps) {
 	// resolvedTheme è undefined in SSR: default 'theme-dark' finché non montato (lezione header.tsx).

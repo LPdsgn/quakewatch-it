@@ -8,11 +8,11 @@ import { EventList } from '@/components/shell/event-list'
 import { SideFooter } from '@/components/shell/side-footer'
 import { Summary } from '@/components/shell/summary'
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
+import { SHEET_PEEK } from '@/lib/layout-constants'
 
-const PEEK = 0.18
 const HALF = 0.5
 const FULL = 0.94
-const SNAP_POINTS = [PEEK, HALF, FULL]
+const SNAP_POINTS = [SHEET_PEEK, HALF, FULL]
 
 export interface MobileSheetProps {
 	events: Earthquake[]
@@ -44,7 +44,7 @@ export function MobileSheet({
 }: MobileSheetProps) {
 	// Init lazy sull'eventId iniziale: su deep-link con evento in URL evita il flash
 	// PEEK→FULL al primo render (altrimenti si vedrebbe un frame a peek prima dell'effect).
-	const [snapPoint, setSnapPoint] = useState<number>(() => (eventId !== null ? FULL : PEEK))
+	const [snapPoint, setSnapPoint] = useState<number>(() => (eventId !== null ? FULL : SHEET_PEEK))
 
 	// Selezionare un evento porta il sheet a tutta altezza per mostrare il dettaglio.
 	// Il "indietro" (eventId → null) NON resetta lo snap point: scelta intenzionale, non
@@ -58,7 +58,7 @@ export function MobileSheet({
 	let body: ReactNode
 	if (eventId !== null) {
 		body = listSlot
-	} else if (snapPoint === PEEK) {
+	} else if (snapPoint === SHEET_PEEK) {
 		body = (
 			<>
 				<Summary events={events} isLoading={isLoading} />
