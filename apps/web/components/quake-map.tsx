@@ -13,6 +13,8 @@ export interface QuakeMapProps {
 	events: Earthquake[]
 	selectedId: string | null
 	onSelect: (eventId: string) => void
+	/** Pulse è l'affordance della modalità live: gate aggiuntivo insieme all'età <24h. */
+	isLive: boolean
 }
 
 const CENTER: [number, number] = [12.5, 42.3]
@@ -29,7 +31,7 @@ function toThemeName(resolvedTheme: string | undefined): ThemeName {
 	return resolvedTheme === 'light' ? 'theme-light' : 'theme-dark'
 }
 
-export function QuakeMap({ events, selectedId, onSelect }: QuakeMapProps) {
+export function QuakeMap({ events, selectedId, onSelect, isLive }: QuakeMapProps) {
 	// resolvedTheme è undefined in SSR: default 'theme-dark' finché non montato (lezione header.tsx).
 	const { resolvedTheme } = useTheme()
 	const [mounted, setMounted] = useState(false)
@@ -69,7 +71,7 @@ export function QuakeMap({ events, selectedId, onSelect }: QuakeMapProps) {
 			if (!mostRecent || e.time > mostRecent.time) mostRecent = e
 		}
 		const pulse =
-			mostRecent && now - new Date(mostRecent.time).getTime() < PULSE_WINDOW_MS
+			isLive && mostRecent && now - new Date(mostRecent.time).getTime() < PULSE_WINDOW_MS
 				? mostRecent.eventId
 				: null
 
@@ -102,14 +104,20 @@ export function QuakeMap({ events, selectedId, onSelect }: QuakeMapProps) {
 				}),
 			},
 		}
-	}, [events, selectedId, neutralColor])
+	}, [events, selectedId, neutralColor, isLive])
 
-	// Selezione (da lista o da click sul marker) → flyTo. Legge events da un ref per non
-	// ri-triggerare a ogni refresh del polling: solo il cambio di selectedId conta.
+	// Selezione ESTERNA (dalla lista) → flyTo. Il click diretto su un marker è già a vista:
+	// suppressFlyToRef marca l'eventId appena selezionato da un click sulla mappa, l'effect lo
+	// consuma e salta il flyTo per quel giro (non è una "selezione esterna").
 	const eventsRef = useRef(events)
 	eventsRef.current = events
+	const suppressFlyToRef = useRef<string | null>(null)
 	useEffect(() => {
 		if (!mapLoaded || !selectedId) return
+		if (suppressFlyToRef.current === selectedId) {
+			suppressFlyToRef.current = null
+			return
+		}
 		const event = eventsRef.current.find((e) => e.eventId === selectedId)
 		if (!event) return
 		mapRef.current?.flyTo({ center: [event.longitude, event.latitude], zoom: 8, duration: 800 })
@@ -155,7 +163,10 @@ export function QuakeMap({ events, selectedId, onSelect }: QuakeMapProps) {
 			onMouseLeave={() => setHovering(false)}
 			onClick={(e) => {
 				const eventId = e.features?.[0]?.properties?.eventId
-				if (typeof eventId === 'string') onSelect(eventId)
+				if (typeof eventId === 'string') {
+					suppressFlyToRef.current = eventId
+					onSelect(eventId)
+				}
 			}}
 			onLoad={() => setMapLoaded(true)}
 			onError={(e) => console.error('MAPLIBRE ERROR:', e.error?.message ?? e)}

@@ -94,7 +94,12 @@ export function HomeClient() {
 
 			{/* Mappa */}
 			<div className="col-start-1 row-start-1 overflow-hidden bg-card md:col-start-2">
-				<QuakeMap events={events} selectedId={state.event} onSelect={handleSelectEvent} />
+				<QuakeMap
+					events={events}
+					selectedId={state.event}
+					onSelect={handleSelectEvent}
+					isLive={state.window === '24h'}
+				/>
 			</div>
 
 			<TimelineSlot />
