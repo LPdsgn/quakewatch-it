@@ -91,6 +91,7 @@ export function MobileSheet({
 					selectedId={eventId}
 					onSelect={onSelectEvent}
 					nowMs={nowMs}
+					defaultOpen={false}
 				/>
 				<AreaPreset area={area} window={window} onChange={onAreaWindowChange} />
 				{listSlot}
