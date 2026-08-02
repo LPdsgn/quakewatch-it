@@ -118,7 +118,7 @@ export function HomeClient() {
 	}
 
 	return (
-		<div className="grid h-screen w-screen grid-cols-1 grid-rows-1 bg-background text-foreground md:grid-cols-[360px_1fr] md:grid-rows-[1fr_72px]">
+		<div className="grid h-dvh w-screen grid-cols-1 grid-rows-1 bg-background text-foreground md:grid-cols-[360px_1fr] md:grid-rows-[1fr_72px]">
 			{/* Sidebar: sotto md sparisce, sostituita dal bottom sheet (mobile-sheet.tsx) */}
 			<div className="col-start-1 row-start-1 row-span-2 hidden flex-col gap-2 overflow-hidden bg-sidebar p-2 md:flex">
 				<Header isLive={state.window === '24h'} nowMs={nowMs} />

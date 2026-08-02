@@ -3,6 +3,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
+		"dev:web": "pnpm --filter web dev",
 		"test": "pnpm -r test",
 		"typecheck": "pnpm -r typecheck",
 		"lint": "oxlint --report-unused-disable-directives --max-warnings=0",

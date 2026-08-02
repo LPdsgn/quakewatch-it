@@ -11,7 +11,7 @@ import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import { SHEET_PEEK } from '@/lib/layout-constants'
 
 const HALF = 0.5
-const FULL = 0.94
+const FULL = 0.85
 const SNAP_POINTS = [SHEET_PEEK, HALF, FULL]
 
 export interface MobileSheetProps {

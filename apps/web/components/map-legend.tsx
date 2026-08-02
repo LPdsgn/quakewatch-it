@@ -19,6 +19,8 @@ const AGE_OPACITIES = [1, 0.65, 0.35]
 // Tailwind non accetta variabili runtime nelle classi arbitrarie: offset via style inline,
 // derivato da SHEET_PEEK (mobile-sheet.tsx) per restare sopra il Drawer a PEEK senza duplicare
 // il numero — se PEEK cambia, questo offset segue.
+// dvh, non svh: il Drawer è alto 100dvh (drawer.tsx), quindi a PEEK il suo bordo sta a
+// SHEET_PEEK×dvh dal fondo — con svh la legenda si stacca quando l'address bar mobile collassa.
 const MOBILE_BOTTOM_OFFSET = `calc(${SHEET_PEEK * 100}dvh + env(safe-area-inset-bottom) + 0.5rem)`
 
 function LegendBody({ colors, showMmi }: { colors: Record<string, string>; showMmi: boolean }) {
@@ -59,7 +61,7 @@ function LegendBody({ colors, showMmi }: { colors: Record<string, string>; showM
 						{MMI_SCALE.map((s) => (
 							<span
 								key={s.value}
-								className="h-2 w-2 rounded-[2px]"
+								className="h-2 w-2 rounded-xs"
 								style={{ backgroundColor: s.color }}
 							/>
 						))}
