@@ -6,13 +6,16 @@ import {
 	type EventDetail as EventDetailData,
 	type EventDetailResponse,
 } from '@quakewatch/core'
-import { ArrowLeft } from 'lucide-react'
+import { X, ArrowLeft } from 'lucide-react'
 import { useEffect, useRef, type ReactNode } from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Field, FieldContent, FieldDescription, FieldLabel } from '@/components/ui/field'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Switch } from '@/components/ui/switch'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 
 export interface EventDetailProps {
@@ -50,13 +53,6 @@ export function EventDetail({ eventId, onBack, showShakemap, onToggleShakemap }:
 	// prodotto esiste, per mostrare toggle o riga muted. Stessa queryKey di QuakeMap → cache condivisa.
 	const shakemap = useShakemapQuery(eventId, true)
 
-	// Il pannello sostituisce la lista: sposta il focus su "Indietro" (a11y, niente focus perso
-	// nel vuoto quando il nodo precedente scompare).
-	const backButtonRef = useRef<HTMLButtonElement>(null)
-	useEffect(() => {
-		backButtonRef.current?.focus()
-	}, [])
-
 	let body: ReactNode
 	if (isLoading) {
 		body = <DetailSkeleton />
@@ -81,15 +77,43 @@ export function EventDetail({ eventId, onBack, showShakemap, onToggleShakemap }:
 	}
 
 	return (
-		<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
-			<div className="shrink-0 border-b border-border p-1.5">
-				<Button type="button" variant="ghost" size="sm" onClick={onBack} ref={backButtonRef}>
-					<ArrowLeft /> Indietro
-				</Button>
-			</div>
+		<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card relative">
+			<EventBackButton onBack={onBack} />
 			<ScrollArea className="min-h-0 flex-1">
 				<div className="flex flex-col gap-4 p-3">{body}</div>
 			</ScrollArea>
+		</div>
+	)
+}
+
+/**
+ * Unico punto di uscita dal dettaglio, fuori dallo ScrollArea: deve restare visibile anche
+ * negli stati loading/error. Riceve il focus al mount (a11y: il pannello sostituisce la
+ * lista, niente focus perso nel vuoto quando il nodo precedente scompare).
+ */
+function EventBackButton({ onBack }: { onBack: () => void }) {
+	const backButtonRef = useRef<HTMLButtonElement>(null)
+	useEffect(() => {
+		backButtonRef.current?.focus()
+	}, [])
+	const isMobile = useIsMobile()
+
+	return !isMobile ? (
+		<Button
+			type="button"
+			variant="ghost"
+			size="icon"
+			onClick={onBack}
+			ref={backButtonRef}
+			className="absolute right-2 top-2 z-2"
+		>
+			<X />
+		</Button>
+	) : (
+		<div className="shrink-0 border-b border-border p-1.5">
+			<Button type="button" variant="ghost" size="sm" onClick={onBack} ref={backButtonRef}>
+				<ArrowLeft /> Indietro
+			</Button>
 		</div>
 	)
 }
@@ -210,7 +234,10 @@ function ShakemapSection({
 	return <ShakemapToggle showShakemap={showShakemap} onToggleShakemap={onToggleShakemap} />
 }
 
-/** Bottone toggle stile area-preset.tsx (aria-pressed su elemento nativo, niente switch dedicato). */
+/**
+ * Switch (Field + Switch base-nova): label per il cittadino, non per il sismologo —
+ * "ShakeMap" resta solo nella descrizione come attribuzione del prodotto INGV.
+ */
 function ShakemapToggle({
 	showShakemap,
 	onToggleShakemap,
@@ -220,17 +247,19 @@ function ShakemapToggle({
 }) {
 	return (
 		<div className="border-t border-border pt-3">
-			<button
-				type="button"
-				aria-pressed={showShakemap}
-				onClick={() => onToggleShakemap(!showShakemap)}
-				className={cn(
-					'rounded-lg border border-border px-2.5 py-1.5 text-xs',
-					showShakemap ? 'bg-muted text-foreground' : 'text-muted-foreground'
-				)}
-			>
-				Scuotimento (ShakeMap)
-			</button>
+			<Field orientation="horizontal">
+				<FieldContent>
+					<FieldLabel htmlFor="switch-shakemap">Mappa d&apos;impatto</FieldLabel>
+					<FieldDescription className="text-xs font-normal">
+						Mostra le aree di scuotimento stimate{/*  (ShakeMap INGV) */}.
+					</FieldDescription>
+				</FieldContent>
+				<Switch
+					id="switch-shakemap"
+					checked={showShakemap}
+					onCheckedChange={(next) => onToggleShakemap(next)}
+				/>
+			</Field>
 		</div>
 	)
 }
