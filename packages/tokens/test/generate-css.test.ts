@@ -1,6 +1,11 @@
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+
 import { describe, expect, it } from 'vitest'
 
 import { SEMANTIC_TOKENS, THEME_NAMES, generateThemeCss } from '../src/index'
+
+const THEME_CSS_PATH = fileURLToPath(new URL('../../../apps/web/app/theme.css', import.meta.url))
 
 describe('SEMANTIC_TOKENS', () => {
 	it('dark e light espongono esattamente gli stessi nomi (nessun token orfano)', () => {
@@ -94,5 +99,10 @@ describe('generateThemeCss', () => {
 		expect(css).toContain('--background:')
 		expect(css).toContain('--sidebar-background:')
 		expect(css).toContain('NON EDITARE')
+	})
+
+	it('apps/web/app/theme.css è allineato al generatore (drift guard: rigenerare con build:css)', () => {
+		const committed = readFileSync(THEME_CSS_PATH, 'utf8')
+		expect(committed).toBe(generateThemeCss())
 	})
 })

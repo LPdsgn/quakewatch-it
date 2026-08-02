@@ -17,7 +17,9 @@ export interface HeaderProps {
 export function Header({ isLive, nowMs }: HeaderProps) {
 	// null finché l'orologio non ha ancora ticchettato: mai Date.now() in render SSR (lezione prototipo).
 	const clock =
-		nowMs !== null ? new Date(nowMs).toLocaleTimeString('it-IT', { hour12: false }) : null
+		nowMs !== null
+			? new Date(nowMs).toLocaleTimeString('it-IT', { hour12: false, timeZone: 'Europe/Rome' })
+			: null
 
 	// resolvedTheme è undefined in SSR: renderizza il toggle solo dopo il mount.
 	const { resolvedTheme, setTheme } = useTheme()

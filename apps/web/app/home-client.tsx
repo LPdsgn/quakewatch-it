@@ -2,7 +2,7 @@
 
 import { useEventsQuery, WINDOW_CONFIG, type TimeWindow } from '@quakewatch/core'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { QuakeMap } from '@/components/quake-map'
 import { AreaPreset } from '@/components/shell/area-preset'
@@ -29,8 +29,13 @@ export function HomeClient() {
 	const searchParams = useSearchParams()
 	const state = parseAppState(searchParams)
 
-	const { data, isLoading } = useEventsQuery(state.window, state.area)
+	const { data, isLoading, isError } = useEventsQuery(state.window, state.area)
 	const events = data?.events ?? []
+
+	// Ultimo evento selezionato prima di "indietro": ripristina il focus lì in EventList (a11y).
+	// Ref, non state — non deve causare un re-render, solo essere letto al prossimo render
+	// già innescato dal cambio di stato.event via router.replace.
+	const lastClearedIdRef = useRef<string | null>(null)
 
 	// Orologio condiviso (Header + lista eventi): un solo interval per la pagina, mai
 	// Date.now() in render SSR (lezione prototipo) → null finché non ha ticchettato.
@@ -53,6 +58,7 @@ export function HomeClient() {
 	}
 
 	function handleClearEvent() {
+		lastClearedIdRef.current = state.event
 		const qs = serializeAppState({ ...state, event: null })
 		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
 	}
@@ -73,6 +79,12 @@ export function HomeClient() {
 				))}
 			</div>
 		)
+	} else if (isError) {
+		listSlot = (
+			<div className="dot-grid flex flex-1 items-center justify-center rounded-xl border border-border bg-card px-4 text-center text-xs text-muted-foreground">
+				Dati non disponibili al momento.
+			</div>
+		)
 	} else if (events.length === 0) {
 		listSlot = (
 			<div className="dot-grid flex flex-1 items-center justify-center rounded-xl border border-border bg-card px-4 text-center text-xs text-muted-foreground">
@@ -86,6 +98,7 @@ export function HomeClient() {
 				selectedId={state.event}
 				onSelect={handleSelectEvent}
 				nowMs={nowMs}
+				restoreFocusId={lastClearedIdRef.current}
 			/>
 		)
 	}
@@ -95,7 +108,7 @@ export function HomeClient() {
 			{/* Sidebar: sotto md sparisce, sostituita dal bottom sheet (mobile-sheet.tsx) */}
 			<div className="col-start-1 row-start-1 row-span-2 hidden flex-col gap-2 overflow-hidden bg-sidebar p-2 md:flex">
 				<Header isLive={state.window === '24h'} nowMs={nowMs} />
-				<Summary events={events} isLoading={isLoading} />
+				<Summary events={events} isLoading={isLoading} hasError={isError} />
 				<AreaPreset area={state.area} window={state.window} onChange={handleAreaWindowChange} />
 				{listSlot}
 				<SideFooter />
@@ -107,7 +120,7 @@ export function HomeClient() {
 			<div className="pointer-events-none relative z-10 col-start-1 row-start-1 flex flex-col gap-2 p-2 pt-[env(safe-area-inset-top)] md:hidden">
 				<div className="pointer-events-auto flex flex-col gap-2">
 					<Header isLive={state.window === '24h'} nowMs={nowMs} />
-					<Summary events={events} isLoading={isLoading} />
+					<Summary events={events} isLoading={isLoading} hasError={isError} />
 				</div>
 			</div>
 

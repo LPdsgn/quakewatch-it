@@ -1,4 +1,5 @@
 import type { Earthquake } from '@quakewatch/core'
+import { useEffect, useRef } from 'react'
 
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { relativeTime } from '@/lib/rel-time'
@@ -10,15 +11,26 @@ export interface EventListProps {
 	onSelect: (eventId: string) => void
 	/** Epoch ms dell'orologio condiviso (T8); null finché non montato (niente Date.now() in SSR). */
 	nowMs: number | null
+	/** Id dell'evento selezionato prima dell'ultimo "indietro": ripristina il focus lì (a11y). */
+	restoreFocusId?: string | null
 }
 
-export function EventList({ events, selectedId, onSelect, nowMs }: EventListProps) {
+export function EventList({ events, selectedId, onSelect, nowMs, restoreFocusId }: EventListProps) {
 	const sorted = events.toSorted((a, b) => b.time.localeCompare(a.time))
 	const mostRecentId = sorted[0]?.eventId ?? null
 
+	const listRef = useRef<HTMLDivElement>(null)
+	useEffect(() => {
+		if (!restoreFocusId) return
+		// Nessun match (riga non più presente, es. finestra/area cambiata) → nessuna focus call.
+		listRef.current
+			?.querySelector<HTMLButtonElement>(`[data-event-id="${restoreFocusId}"]`)
+			?.focus()
+	}, [restoreFocusId])
+
 	return (
 		<ScrollArea className="min-h-0 flex-1 rounded-xl border border-border bg-card">
-			<div className="flex flex-col gap-1 p-1.5">
+			<div ref={listRef} className="flex flex-col gap-1 p-1.5">
 				{sorted.map((event) => {
 					const isSelected = event.eventId === selectedId
 					const isAccent = isSelected || event.eventId === mostRecentId
@@ -26,10 +38,12 @@ export function EventList({ events, selectedId, onSelect, nowMs }: EventListProp
 						<button
 							key={event.eventId}
 							type="button"
+							data-event-id={event.eventId}
 							aria-current={isSelected ? 'true' : undefined}
 							title={new Date(event.time).toLocaleString('it-IT', {
 								dateStyle: 'full',
 								timeStyle: 'medium',
+								timeZone: 'Europe/Rome',
 							})}
 							onClick={() => onSelect(event.eventId)}
 							className={cn(

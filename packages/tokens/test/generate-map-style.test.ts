@@ -33,4 +33,10 @@ describe('buildMapStyle', () => {
 		const country = s.layers.find((l) => l.id === 'boundary-country')
 		expect(JSON.stringify(country?.filter)).toContain('maritime')
 	})
+
+	it('i confini regionali filtrano maritime=0 (niente cerchi in mare)', () => {
+		const s = buildMapStyle('theme-dark')
+		const region = s.layers.find((l) => l.id === 'boundary-region')
+		expect(JSON.stringify(region?.filter)).toContain('maritime')
+	})
 })

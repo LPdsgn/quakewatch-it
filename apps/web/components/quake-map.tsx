@@ -159,6 +159,9 @@ export function QuakeMap({ events, selectedId, onSelect, isLive }: QuakeMapProps
 			style={{ width: '100%', height: '100%' }}
 			interactiveLayerIds={['events-circle']}
 			cursor={hovering ? 'pointer' : undefined}
+			// Aggiunge l'attribuzione INGV a quella dei tile (non la sostituisce): deve restare
+			// visibile in ogni snap state mobile, incluso PEEK (vincolo non negoziabile).
+			attributionControl={{ customAttribution: 'Dati INGV — Osservatorio Nazionale Terremoti' }}
 			onMouseEnter={() => setHovering(true)}
 			onMouseLeave={() => setHovering(false)}
 			onClick={(e) => {

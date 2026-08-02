@@ -6,7 +6,7 @@ import {
 	type EventDetailResponse,
 } from '@quakewatch/core'
 import { ArrowLeft } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -22,7 +22,11 @@ export interface EventDetailProps {
 const INGV_EVENT_URL = 'https://terremoti.ingv.it/event/'
 
 function formatLocal(iso: string): string {
-	return new Date(iso).toLocaleString('it-IT', { dateStyle: 'full', timeStyle: 'medium' })
+	return new Date(iso).toLocaleString('it-IT', {
+		dateStyle: 'full',
+		timeStyle: 'medium',
+		timeZone: 'Europe/Rome',
+	})
 }
 
 function formatUtc(iso: string): string {
@@ -40,6 +44,13 @@ function formatCoords(latitude: number, longitude: number): string {
 export function EventDetail({ eventId, onBack }: EventDetailProps) {
 	const { data, isLoading, isError } = useEventDetailQuery(eventId)
 
+	// Il pannello sostituisce la lista: sposta il focus su "Indietro" (a11y, niente focus perso
+	// nel vuoto quando il nodo precedente scompare).
+	const backButtonRef = useRef<HTMLButtonElement>(null)
+	useEffect(() => {
+		backButtonRef.current?.focus()
+	}, [])
+
 	let body: ReactNode
 	if (isLoading) {
 		body = <DetailSkeleton />
@@ -56,7 +67,7 @@ export function EventDetail({ eventId, onBack }: EventDetailProps) {
 	return (
 		<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
 			<div className="shrink-0 border-b border-border p-1.5">
-				<Button type="button" variant="ghost" size="sm" onClick={onBack}>
+				<Button type="button" variant="ghost" size="sm" onClick={onBack} ref={backButtonRef}>
 					<ArrowLeft /> Indietro
 				</Button>
 			</div>
