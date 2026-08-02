@@ -10,17 +10,14 @@ import { cn } from '@/lib/utils'
 export interface HeaderProps {
 	/** LIVE (rosso) solo per la finestra 24h; altrimenti dot neutro. */
 	isLive: boolean
+	/** Epoch ms dell'orologio condiviso (home-client, T8/T9): un solo interval per la pagina. */
+	nowMs: number | null
 }
 
-export function Header({ isLive }: HeaderProps) {
-	// Orologio: null fino al mount, mai Date.now() in render SSR (lezione prototipo).
-	const [clock, setClock] = useState<string | null>(null)
-	useEffect(() => {
-		const tick = () => setClock(new Date().toLocaleTimeString('it-IT', { hour12: false }))
-		tick()
-		const id = setInterval(tick, 1000)
-		return () => clearInterval(id)
-	}, [])
+export function Header({ isLive, nowMs }: HeaderProps) {
+	// null finché l'orologio non ha ancora ticchettato: mai Date.now() in render SSR (lezione prototipo).
+	const clock =
+		nowMs !== null ? new Date(nowMs).toLocaleTimeString('it-IT', { hour12: false }) : null
 
 	// resolvedTheme è undefined in SSR: renderizza il toggle solo dopo il mount.
 	const { resolvedTheme, setTheme } = useTheme()

@@ -62,6 +62,7 @@ apps/web (client)
   - *Riepilogo*: numeri grandi in display seven-segment (eventi 24h, magnitudo max, area più attiva)
   - *Aree preset*: controllo segmentato (Tutta Italia / Campi Flegrei / Etna / …; lista definita come costante configurabile in `packages/core`) che filtra mappa e lista su bounding box
   - *Lista eventi*: voci piatte, dati (M, profondità, tempo relativo) in mono, evento selezionato in rosso accento, badge `PRELIMINARE`/`RIVISTO`
+    > **Revisione 2026-08-02 (T9):** nessun badge nelle righe della lista — lo stato revisioni è disponibile solo dal QuakeML per-evento (un fetch per evento, insostenibile per l'intera lista). Il badge vive nel dettaglio evento (T11).
   - *Dettaglio evento* (scorre sopra la lista, con back): magnitudo e tipo, profondità, coordinate, tempo (locale + UTC), storico revisioni con valori precedenti barrati, link a scheda INGV
   - Footer: attribuzione **INGV — Osservatorio Nazionale Terremoti** sempre visibile
 - **Mappa**: epicentri come cerchi — raggio ∝ magnitudo, recenza in accento rosso che sfuma verso il grigio con l'età; pulse sull'ultimo evento in live; selezione sincronizzata lista↔mappa. Niente cluster in v1.
