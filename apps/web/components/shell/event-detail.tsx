@@ -7,7 +7,7 @@ import {
 	type EventDetailResponse,
 } from '@quakewatch/core'
 import { X, ArrowLeft } from 'lucide-react'
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode } from 'react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -96,10 +96,16 @@ export function EventDetail({ eventId, onBack, showShakemap, onToggleShakemap }:
  */
 function EventBackButton({ onBack }: { onBack: () => void }) {
 	const backButtonRef = useRef<HTMLButtonElement>(null)
+	const isMobile = useIsMobile()
+	// useIsMobile parte da `undefined` (→ false) al primissimo render e si assesta al valore
+	// vero solo nel suo effect di mount: un effect con deps `[]` fotograferebbe quindi sempre
+	// il bottone desktop, anche su mobile. Con deps `[isMobile]` l'effect rifocalizza quando
+	// il breakpoint si assesta (branch X→Indietro), quindi il focus arriva sempre sul bottone
+	// realmente mostrato. Niente ref "focus già dato" qui: bloccherebbe proprio il refocus che
+	// serve al secondo giro (il primo giro è per definizione il valore non ancora assestato).
 	useEffect(() => {
 		backButtonRef.current?.focus()
-	}, [])
-	const isMobile = useIsMobile()
+	}, [isMobile])
 
 	return !isMobile ? (
 		<Button
@@ -248,17 +254,22 @@ function ShakemapToggle({
 	showShakemap: boolean
 	onToggleShakemap: (next: boolean) => void
 }) {
+	// id univoco per istanza: EventDetail monta due volte in contemporanea (sidebar desktop +
+	// MobileSheet, vedi commento su detailNode in home-client.tsx), quindi un id statico
+	// duplicherebbe "switch-shakemap" nel DOM (HTML non valido, htmlFor ambiguo).
+	const id = useId()
+
 	return (
 		<div className="border-t border-border pt-3">
 			<Field orientation="horizontal">
 				<FieldContent>
-					<FieldLabel htmlFor="switch-shakemap">Mappa d&apos;impatto</FieldLabel>
+					<FieldLabel htmlFor={id}>Mappa d&apos;impatto</FieldLabel>
 					<FieldDescription className="text-xs font-normal">
-						Mostra le aree di scuotimento stimate{/*  (ShakeMap INGV) */}.
+						Mostra le aree di scuotimento stimate.
 					</FieldDescription>
 				</FieldContent>
 				<Switch
-					id="switch-shakemap"
+					id={id}
 					checked={showShakemap}
 					onCheckedChange={(next) => onToggleShakemap(next)}
 				/>

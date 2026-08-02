@@ -128,6 +128,10 @@ export function HomeClient() {
 	// in event-detail.tsx) quando si passa da un evento all'altro a dettaglio già aperto — in
 	// variante B (float) la lista resta cliccabile col riquadro aperto, quindi questo è l'unico
 	// evento che aggiorna il dettaglio senza uno smontaggio precedente (niente unmount→mount).
+	// Attenzione: questo stesso nodo viene piazzato sia nello slot sidebar desktop sia in
+	// MobileSheet (vedi listSlot sotto) → EventDetail monta due istanze in contemporanea.
+	// Tutto quello che sta dentro EventDetail deve essere instance-safe: niente id statici,
+	// niente focus incondizionato al mount.
 	const detailNode =
 		state.event !== null ? (
 			<EventDetail
