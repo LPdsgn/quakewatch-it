@@ -42,6 +42,14 @@ describe('useEventDetailQuery', () => {
 		expect(result.current.fetchStatus).toBe('idle')
 		expect(fetchMock).not.toHaveBeenCalled()
 	})
+
+	it('404 → data null SENZA isError (evento non trovato è stato normale)', async () => {
+		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 404 })))
+		const { result } = renderHook(() => useEventDetailQuery('nonexistent'), { wrapper })
+		await waitFor(() => expect(result.current.isSuccess).toBe(true))
+		expect(result.current.data).toBeNull()
+		expect(result.current.isError).toBe(false)
+	})
 })
 
 describe('useShakemapQuery', () => {

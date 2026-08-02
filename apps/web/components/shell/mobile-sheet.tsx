@@ -21,6 +21,8 @@ const SNAP_POINTS_DETAIL = [SHEET_PEEK, HALF]
 export interface MobileSheetProps {
 	events: Earthquake[]
 	isLoading: boolean
+	/** Fetch fallito: inoltrata alla Summary del PEEK (stesso trattamento del ramo desktop). */
+	hasError: boolean
 	area: string
 	window: TimeWindow
 	eventId: string | null
@@ -38,6 +40,7 @@ export interface MobileSheetProps {
 export function MobileSheet({
 	events,
 	isLoading,
+	hasError,
 	area,
 	window,
 	eventId,
@@ -68,6 +71,7 @@ export function MobileSheet({
 				<Summary
 					events={events}
 					isLoading={isLoading}
+					hasError={hasError}
 					onSelectEvent={onSelectEvent}
 					nowMs={nowMs}
 				/>

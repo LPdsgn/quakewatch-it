@@ -34,10 +34,18 @@ export function useEventsQuery(window: TimeWindow, areaId: string) {
 	})
 }
 
+/** 404 = evento non trovato, stato normale (non un errore): ritorna null invece di lanciare. */
+async function fetchEventDetail(eventId: string): Promise<EventDetailResponse | null> {
+	const res = await fetch(`/api/events/${eventId}`)
+	if (res.status === 404) return null
+	if (!res.ok) throw new Error(`proxy ${res.status}`)
+	return res.json() as Promise<EventDetailResponse>
+}
+
 export function useEventDetailQuery(eventId: string | null) {
 	return useQuery({
 		queryKey: ['event-detail', eventId],
-		queryFn: () => fetchJson<EventDetailResponse>(`/api/events/${eventId}`),
+		queryFn: () => fetchEventDetail(eventId as string),
 		enabled: eventId !== null,
 	})
 }

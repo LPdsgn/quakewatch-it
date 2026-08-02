@@ -241,6 +241,7 @@ export function HomeClient() {
 			<MobileSheet
 				events={events}
 				isLoading={isLoading}
+				hasError={isError}
 				area={state.area}
 				window={state.window}
 				eventId={state.event}

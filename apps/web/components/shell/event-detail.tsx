@@ -56,6 +56,9 @@ export function EventDetail({ eventId, onBack, showShakemap, onToggleShakemap }:
 	let body: ReactNode
 	if (isLoading) {
 		body = <DetailSkeleton />
+	} else if (data === null) {
+		// 404 dal proxy: evento inesistente, non un guasto — niente promessa di retry.
+		body = <p className="py-6 text-center text-xs text-muted-foreground">Evento non trovato.</p>
 	} else if (isError || !data) {
 		body = (
 			<p className="py-6 text-center text-xs text-muted-foreground">
