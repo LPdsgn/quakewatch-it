@@ -72,6 +72,7 @@ export function EventDetail({ eventId, onBack, showShakemap, onToggleShakemap }:
 				eventId={eventId}
 				data={data}
 				shakemapLoading={shakemap.isLoading}
+				shakemapError={shakemap.isError}
 				shakemapAvailable={shakemap.data != null}
 				showShakemap={showShakemap}
 				onToggleShakemap={onToggleShakemap}
@@ -109,6 +110,7 @@ interface DetailBodyProps {
 	eventId: string
 	data: EventDetailResponse
 	shakemapLoading: boolean
+	shakemapError: boolean
 	shakemapAvailable: boolean
 	showShakemap: boolean
 	onToggleShakemap: (next: boolean) => void
@@ -118,6 +120,7 @@ function DetailBody({
 	eventId,
 	data,
 	shakemapLoading,
+	shakemapError,
 	shakemapAvailable,
 	showShakemap,
 	onToggleShakemap,
@@ -153,14 +156,14 @@ function DetailBody({
 
 			{hasRevisions && <RevisionHistory detail={detail} />}
 
-			{!shakemapLoading &&
-				(shakemapAvailable ? (
-					<ShakemapToggle showShakemap={showShakemap} onToggleShakemap={onToggleShakemap} />
-				) : (
-					<p className="border-t border-border pt-3 text-xs text-muted-foreground">
-						ShakeMap non disponibile per questo evento
-					</p>
-				))}
+			{!shakemapLoading && (
+				<ShakemapSection
+					shakemapError={shakemapError}
+					shakemapAvailable={shakemapAvailable}
+					showShakemap={showShakemap}
+					onToggleShakemap={onToggleShakemap}
+				/>
+			)}
 
 			<a
 				href={`${INGV_EVENT_URL}${eventId}`}
@@ -172,6 +175,39 @@ function DetailBody({
 			</a>
 		</>
 	)
+}
+
+/**
+ * Tre stati distinti (non un'assenza unica): un 502 upstream non è la stessa cosa di "nessun
+ * prodotto per questo evento" (finding review) — messaggio muted diverso, coerente in tono con
+ * "Impossibile caricare..." del corpo principale, mai allerta/allarme/pericolo.
+ */
+function ShakemapSection({
+	shakemapError,
+	shakemapAvailable,
+	showShakemap,
+	onToggleShakemap,
+}: {
+	shakemapError: boolean
+	shakemapAvailable: boolean
+	showShakemap: boolean
+	onToggleShakemap: (next: boolean) => void
+}) {
+	if (shakemapError) {
+		return (
+			<p className="border-t border-border pt-3 text-xs text-muted-foreground">
+				Impossibile verificare lo ShakeMap di questo evento. Riprova più tardi.
+			</p>
+		)
+	}
+	if (!shakemapAvailable) {
+		return (
+			<p className="border-t border-border pt-3 text-xs text-muted-foreground">
+				ShakeMap non disponibile per questo evento
+			</p>
+		)
+	}
+	return <ShakemapToggle showShakemap={showShakemap} onToggleShakemap={onToggleShakemap} />
 }
 
 /** Bottone toggle stile area-preset.tsx (aria-pressed su elemento nativo, niente switch dedicato). */

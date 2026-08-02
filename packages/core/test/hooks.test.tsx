@@ -53,6 +53,13 @@ describe('useShakemapQuery', () => {
 		expect(result.current.isError).toBe(false)
 	})
 
+	it("502 upstream → isError (distinto dall'assenza prodotto: event-detail.tsx ci si affida)", async () => {
+		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 502 })))
+		const { result } = renderHook(() => useShakemapQuery('46725592', true), { wrapper })
+		await waitFor(() => expect(result.current.isError).toBe(true))
+		expect(result.current.data).toBeUndefined()
+	})
+
 	it('200 → ritorna la FeatureCollection', async () => {
 		const body = { type: 'FeatureCollection', features: [] }
 		vi.stubGlobal(

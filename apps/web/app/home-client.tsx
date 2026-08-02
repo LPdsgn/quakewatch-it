@@ -38,9 +38,12 @@ export function HomeClient() {
 	// già innescato dal cambio di stato.event via router.replace.
 	const lastClearedIdRef = useRef<string | null>(null)
 
-	// Toggle ShakeMap (T5): si azzera a ogni cambio di evento selezionato e alla chiusura
-	// del dettaglio (handleSelectEvent/handleClearEvent sotto), mai persistito nell'URL.
+	// Toggle ShakeMap (T5): mai persistito nell'URL. Derivato da state.event (non dagli handler
+	// sotto): state.event viene da useSearchParams, quindi cambia anche per back/forward del
+	// browser o navigazione diretta senza mai passare da handleSelectEvent/handleClearEvent —
+	// un effect sull'evento è l'unico modo di azzerarlo in ogni caso.
 	const [showShakemap, setShowShakemap] = useState(false)
+	useEffect(() => setShowShakemap(false), [state.event])
 
 	// Orologio condiviso (Header + lista eventi): un solo interval per la pagina, mai
 	// Date.now() in render SSR (lezione prototipo) → null finché non ha ticchettato.
@@ -58,13 +61,11 @@ export function HomeClient() {
 	}
 
 	function handleSelectEvent(eventId: string) {
-		setShowShakemap(false)
 		const qs = serializeAppState({ ...state, event: eventId })
 		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
 	}
 
 	function handleClearEvent() {
-		setShowShakemap(false)
 		lastClearedIdRef.current = state.event
 		const qs = serializeAppState({ ...state, event: null })
 		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
