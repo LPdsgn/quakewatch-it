@@ -29,7 +29,7 @@ export function EventList({ events, selectedId, onSelect, nowMs, restoreFocusId 
 	}, [restoreFocusId])
 
 	return (
-		<ScrollArea className="min-h-0 flex-1 rounded-xl border border-border bg-card">
+		<ScrollArea className="min-h-0 flex-1 rounded-xl border border-border bg-card overflow-clip">
 			<div ref={listRef} className="flex flex-col gap-1 p-1.5">
 				{sorted.map((event) => {
 					const isSelected = event.eventId === selectedId

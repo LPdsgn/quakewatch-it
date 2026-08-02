@@ -9,6 +9,7 @@ import { SideFooter } from '@/components/shell/side-footer'
 import { Strongest } from '@/components/shell/strongest'
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import { SHEET_FULL, SHEET_HALF, SHEET_PEEK } from '@/lib/layout-constants'
+import { cn } from '@/lib/utils'
 
 const SNAP_POINTS = [SHEET_PEEK, SHEET_HALF, SHEET_FULL]
 // Col dettaglio aperto FULL sparisce dai punti raggiungibili: HALF basta per le informazioni
@@ -88,34 +89,47 @@ export function MobileSheet({
 	}
 
 	return (
-		<Drawer
-			open
-			modal={false}
-			showSwipeHandle
-			snapPoints={eventId !== null ? SNAP_POINTS_DETAIL : SNAP_POINTS}
-			snapPoint={snapPoint}
-			onSnapPointChange={(next) => {
-				if (typeof next === 'number') onSnapPointChange(next)
-			}}
-		>
-			<DrawerContent
-				aria-label="Eventi sismici"
-				className="pb-[env(safe-area-inset-bottom)] md:hidden"
+		<>
+			{/* A FULL lo sheet copre parzialmente header/chip fissi in alto: overlay che dichiara
+			    visivamente il contenuto sotto come non attivo; il tap riporta a HALF. Sotto il
+			    Drawer (z-50), sopra mappa e overlay top (z-10). */}
+			<div
+				aria-hidden="true"
+				onClick={() => onSnapPointChange(SHEET_HALF)}
+				className={cn(
+					'fixed inset-0 z-40 bg-overlay/40 backdrop-blur-xs transition-opacity duration-300 md:hidden',
+					snapPoint >= SHEET_FULL ? 'opacity-100' : 'pointer-events-none opacity-0'
+				)}
+			/>
+			<Drawer
+				open
+				modal={false}
+				showSwipeHandle
+				snapPoints={eventId !== null ? SNAP_POINTS_DETAIL : SNAP_POINTS}
+				snapPoint={snapPoint}
+				onSnapPointChange={(next) => {
+					if (typeof next === 'number') onSnapPointChange(next)
+				}}
 			>
-				{/* Il popup del Drawer con snap point è alto 100dvh e viene solo TRASLATO
+				<DrawerContent
+					aria-label="Eventi sismici"
+					className="pb-[env(safe-area-inset-bottom)] md:hidden"
+				>
+					{/* Il popup del Drawer con snap point è alto 100dvh e viene solo TRASLATO
 				    (drawer.tsx: --drawer-snap-point-offset): senza un cap esplicito il contenuto
 				    riempie i 100dvh e la parte sotto il bordo schermo è irraggiungibile — la
 				    ScrollArea del dettaglio non scrollava. Altezza = porzione visibile allo snap
 				    corrente, meno swipe handle (h-3) e safe area. */}
-				<div
-					className="flex min-h-0 flex-col gap-2 overflow-hidden p-2 transition-[height] duration-450 ease-[cubic-bezier(0.32,0.72,0,1)]"
-					style={{
-						height: `calc(${snapPoint * 100}dvh - 0.75rem - env(safe-area-inset-bottom))`,
-					}}
-				>
-					{body}
-				</div>
-			</DrawerContent>
-		</Drawer>
+					<div
+						className="flex min-h-0 flex-col gap-2 overflow-hidden p-2 transition-[height] duration-450 ease-[cubic-bezier(0.32,0.72,0,1)]"
+						style={{
+							height: `calc(${snapPoint * 100}dvh - 0.75rem - env(safe-area-inset-bottom))`,
+						}}
+					>
+						{body}
+					</div>
+				</DrawerContent>
+			</Drawer>
+		</>
 	)
 }

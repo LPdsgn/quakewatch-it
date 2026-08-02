@@ -19,15 +19,11 @@ import { Timeline } from '@/components/timeline'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SHEET_HALF, SHEET_PEEK } from '@/lib/layout-constants'
 import { clampT, shouldDeselect } from '@/lib/timeline'
-import { parseAppState, serializeAppState, type Variant } from '@/lib/url-state'
-import { cn } from '@/lib/utils'
+import { parseAppState, serializeAppState } from '@/lib/url-state'
 
-// Switcher A/B (T6): solo dev, mai in produzione — la variante resta comunque raggiungibile
-// via URL (?variant=detail-float) indipendentemente da questo toggle.
-// Verdetto A/B 2026-08-02: vince B (float). Variante A e switcher restano DI PROPOSITO
-// (decisione utente post-verdetto): candidati a diventare un controllo avanzato di layout
-// (es. expert mode, Piano 4+) invece di essere rimossi.
-const SHOW_VARIANT_SWITCHER = process.env.NODE_ENV !== 'production'
+// Verdetto A/B 2026-08-02: vince B (float). La variante A resta raggiungibile e il suo
+// controllo ora vive nel menu dell'header (header-menu.tsx, sezione "Dettaglio evento") —
+// lo switcher dev flottante sulla mappa è stato rimosso in favore di quello.
 
 const WINDOW_TEXT: Record<TimeWindow, string> = {
 	'24h': 'nelle ultime 24 ore',
@@ -146,11 +142,6 @@ export function HomeClient() {
 	function handleClearEvent() {
 		lastClearedIdRef.current = state.event
 		const qs = serializeAppState({ ...state, event: null })
-		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
-	}
-
-	function handleVariantChange(variant: Variant) {
-		const qs = serializeAppState({ ...state, variant })
 		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
 	}
 
@@ -291,38 +282,6 @@ export function HomeClient() {
 				<MapLegend showMmi={showShakemap} sheetSnap={sheetSnap} />
 				{state.variant === 'detail-float' && detailNode && (
 					<EventDetailFloat>{detailNode}</EventDetailFloat>
-				)}
-				{SHOW_VARIANT_SWITCHER && (
-					<div className="pointer-events-none absolute top-2 right-2 z-20 hidden md:block">
-						<div className="pointer-events-auto flex gap-1 rounded-lg border border-border bg-card/85 p-1 text-[10px] backdrop-blur-sm">
-							<button
-								type="button"
-								aria-pressed={state.variant === 'default'}
-								onClick={() => handleVariantChange('default')}
-								className={cn(
-									'rounded-md px-1.5 py-0.5',
-									state.variant === 'default'
-										? 'bg-muted text-foreground'
-										: 'text-muted-foreground'
-								)}
-							>
-								A · sidebar
-							</button>
-							<button
-								type="button"
-								aria-pressed={state.variant === 'detail-float'}
-								onClick={() => handleVariantChange('detail-float')}
-								className={cn(
-									'rounded-md px-1.5 py-0.5',
-									state.variant === 'detail-float'
-										? 'bg-muted text-foreground'
-										: 'text-muted-foreground'
-								)}
-							>
-								B · float
-							</button>
-						</div>
-					</div>
 				)}
 			</div>
 

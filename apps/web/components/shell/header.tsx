@@ -4,7 +4,9 @@ import { Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 
+import { HeaderMenu } from '@/components/shell/header-menu'
 import { Button, buttonVariants } from '@/components/ui/button'
+import { ButtonGroup } from '@/components/ui/button-group'
 import { cn } from '@/lib/utils'
 
 import { Earthquake } from '../icons'
@@ -31,12 +33,7 @@ export function Header({ isLive, nowMs, className }: HeaderProps) {
 	useEffect(() => setMounted(true), [])
 
 	return (
-		<div
-			className={cn(
-				'flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2.5',
-				className
-			)}
-		>
+		<div className={cn('flex items-center justify-between px-3 md:p-1 py-2.5', className)}>
 			<h1 className="flex items-center gap-1.5 text-sm font-semibold tracking-widest text-foreground">
 				<Earthquake className="size-5 text-foreground" />
 				<span className="font-mono">QUAKEWATCH</span>
@@ -55,19 +52,29 @@ export function Header({ isLive, nowMs, className }: HeaderProps) {
 						agg. {clock ?? '—:—:—'}
 					</span>
 				</div>
-				{mounted ? (
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						aria-label={resolvedTheme === 'dark' ? 'Attiva tema chiaro' : 'Attiva tema scuro'}
-						onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-					>
-						{resolvedTheme === 'dark' ? <Sun /> : <Moon />}
-					</Button>
-				) : (
-					<Skeleton className={buttonVariants({ size: 'icon-sm', variant: 'ghost' })} />
-				)}
+				<ButtonGroup>
+					{mounted ? (
+						<>
+							<Button
+								type="button"
+								variant="outline"
+								size="icon"
+								aria-label={
+									resolvedTheme === 'dark' ? 'Attiva tema chiaro' : 'Attiva tema scuro'
+								}
+								onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+							>
+								{resolvedTheme === 'dark' ? <Sun /> : <Moon />}
+							</Button>
+							<HeaderMenu />
+						</>
+					) : (
+						<>
+							<Skeleton className={buttonVariants({ size: 'icon', variant: 'outline' })} />
+							<Skeleton className={buttonVariants({ size: 'icon', variant: 'outline' })} />
+						</>
+					)}
+				</ButtonGroup>
 			</div>
 		</div>
 	)

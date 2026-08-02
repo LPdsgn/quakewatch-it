@@ -10,7 +10,7 @@ import type { ReactNode } from 'react'
  */
 export function EventDetailFloat({ children }: { children: ReactNode }) {
 	return (
-		<div className="pointer-events-none absolute top-2 left-2 z-10 hidden max-h-[70%] w-[360px] md:flex">
+		<div className="pointer-events-none absolute top-2 right-2 z-10 hidden max-h-[70%] w-90 md:flex">
 			<div className="pointer-events-auto flex min-h-0 w-full flex-col">{children}</div>
 		</div>
 	)
