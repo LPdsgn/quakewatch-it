@@ -210,7 +210,7 @@ Tutti i 9 task completati su main, subagent-driven, review per task + review fin
 ### Da fare nel piano successivo (fix-scheduled, non silenziosamente deferred)
 
 1. **Legenda mobile irraggiungibile a HALF** (Important della review finale): l'offset deriva solo da SHEET_PEEK ma col dettaglio aperto lo sheet sta a HALF proprio quando appare la legenda MMI — derivare offset/ancoraggio dallo snap reale del sheet
-2. Cleanup variante A (perdente) + rimozione switcher dev
+2. ~~Cleanup variante A (perdente) + rimozione switcher dev~~ **Decisione utente 2026-08-02: variante A e switcher si TENGONO** come possibile futuro controllo avanzato di layout (es. expert mode); nota nel codice a home-client.tsx
 3. `units`/`weight` opzionali in `ShakemapContours` + test 502 guard-fails + assert no-store nel test timeout
 4. Valutare infra RTL/happy-dom in apps/web (ritira i deferred "nessun component test")
 5. Edge case: focus-steal al crossing runtime del breakpoint 768px con dettaglio aperto (minor, nota della re-review fix wave)
