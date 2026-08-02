@@ -7,7 +7,6 @@ import { AreaPreset } from '@/components/shell/area-preset'
 import { EventList } from '@/components/shell/event-list'
 import { SideFooter } from '@/components/shell/side-footer'
 import { Strongest } from '@/components/shell/strongest'
-import { Summary } from '@/components/shell/summary'
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import { SHEET_FULL, SHEET_HALF, SHEET_PEEK } from '@/lib/layout-constants'
 
@@ -18,8 +17,9 @@ const SNAP_POINTS_DETAIL = [SHEET_PEEK, SHEET_HALF]
 
 export interface MobileSheetProps {
 	events: Earthquake[]
+	/** Non più consumate (la Summary del PEEK è stata rimossa: duplicava i chip dell'overlay
+	 *  in alto); restano nell'interfaccia per non toccare il call site — pulizia a fine piano. */
 	isLoading: boolean
-	/** Fetch fallito: inoltrata alla Summary del PEEK (stesso trattamento del ramo desktop). */
 	hasError: boolean
 	area: string
 	window: TimeWindow
@@ -40,8 +40,6 @@ export interface MobileSheetProps {
  */
 export function MobileSheet({
 	events,
-	isLoading,
-	hasError,
 	area,
 	window,
 	eventId,
@@ -54,19 +52,16 @@ export function MobileSheet({
 }: MobileSheetProps) {
 	const mostRecent = events.toSorted((a, b) => b.time.localeCompare(a.time))[0] ?? null
 
+	// PEEK: filtri geo/tempo + ultimo evento — NIENTE riepilogo (i chip vivono già
+	// nell'overlay in alto: era duplicato, richiesta utente 2026-08-02).
+	// HALF/FULL: hub completo con "I più forti" (solo qui) + lista.
 	let body: ReactNode
 	if (eventId !== null) {
 		body = listSlot
 	} else if (snapPoint === SHEET_PEEK) {
 		body = (
 			<>
-				<Summary
-					events={events}
-					isLoading={isLoading}
-					hasError={hasError}
-					onSelectEvent={onSelectEvent}
-					nowMs={nowMs}
-				/>
+				<AreaPreset area={area} window={window} onChange={onAreaWindowChange} />
 				<EventList
 					events={mostRecent ? [mostRecent] : []}
 					selectedId={null}
@@ -107,7 +102,19 @@ export function MobileSheet({
 				aria-label="Eventi sismici"
 				className="pb-[env(safe-area-inset-bottom)] md:hidden"
 			>
-				<div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden p-2">{body}</div>
+				{/* Il popup del Drawer con snap point è alto 100dvh e viene solo TRASLATO
+				    (drawer.tsx: --drawer-snap-point-offset): senza un cap esplicito il contenuto
+				    riempie i 100dvh e la parte sotto il bordo schermo è irraggiungibile — la
+				    ScrollArea del dettaglio non scrollava. Altezza = porzione visibile allo snap
+				    corrente, meno swipe handle (h-3) e safe area. */}
+				<div
+					className="flex min-h-0 flex-col gap-2 overflow-hidden p-2 transition-[height] duration-450 ease-[cubic-bezier(0.32,0.72,0,1)]"
+					style={{
+						height: `calc(${snapPoint * 100}dvh - 0.75rem - env(safe-area-inset-bottom))`,
+					}}
+				>
+					{body}
+				</div>
 			</DrawerContent>
 		</Drawer>
 	)
