@@ -84,22 +84,6 @@ export function HomeClient() {
 	// t: URL → clamp col clock condiviso. Il clamp NON vive nel parse (pura): qui c'è nowMs.
 	const tMs = state.t !== null ? state.t * 1000 : null
 
-	// Correzione URL: t fuori range (finestra cambiata, t nel futuro) si riscrive una volta nota l'ora.
-	// hasClock (non nowMs) in dep: correggi al primo tick, non a ogni secondo — router/pathname/state
-	// sono letti nell'effect ma volutamente esclusi dalle dep, altrimenti l'effect ripartirebbe a
-	// ogni tick dell'orologio (state è un nuovo oggetto ad ogni render via parseAppState).
-	const hasClock = nowMs !== null
-	// oxlint-disable react-hooks/exhaustive-deps -- vedi commento sopra
-	useEffect(() => {
-		if (nowMs === null || state.t === null) return
-		const clamped = clampT(state.t, nowMs, state.window)
-		if (clamped !== state.t) {
-			const qs = serializeAppState({ ...state, t: clamped })
-			router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
-		}
-	}, [hasClock, state.t, state.window])
-	// oxlint-enable react-hooks/exhaustive-deps
-
 	// Snapshot per lista/riepilogo/più-forti (la mappa NON usa questo: filtra via expression)
 	const visibleEvents = useMemo(
 		() => (tMs !== null ? events.filter((e) => new Date(e.time).getTime() <= tMs) : events),
@@ -109,18 +93,36 @@ export function HomeClient() {
 	// isLive: pulse/affordance live solo su 24h E sul presente
 	const isLive = state.window === '24h' && state.t === null
 
-	// Deselezione coerente: scrub prima dell'evento selezionato → selezione azzerata.
-	// Se l'evento non è nella finestra (deep-link), il suo time non è noto qui: non si giudica.
-	// router/pathname/state esclusi dalle dep di proposito, come nell'effect di clamp sopra.
+	// hasClock (non nowMs) in dep: correggi al primo tick, non a ogni secondo — router/pathname
+	// esclusi dalle dep perché stabili (usePathname/useRouter), state letto per intero ma solo
+	// i campi elencati devono rilanciare il calcolo.
+	const hasClock = nowMs !== null
+
+	// Correzione URL atomica: clamp di t e deselezione coerente calcolati sullo stesso draft,
+	// UN solo replace — due effect separati si sovrascrivevano a vicenda nello stesso flush
+	// (il secondo ributtava nell'URL il t non clampato: finding review T5). La deselezione usa
+	// il t GIÀ clampato (tMsNext), che copre anche il caso t fuori-finestra E prima dell'evento
+	// selezionato nello stesso deep-link.
 	// oxlint-disable react-hooks/exhaustive-deps -- vedi commento sopra
 	useEffect(() => {
-		if (state.event === null || tMs === null) return
-		const selected = events.find((e) => e.eventId === state.event)
-		if (selected && shouldDeselect(new Date(selected.time).getTime(), tMs)) {
-			const qs = serializeAppState({ ...state, event: null })
+		if (nowMs === null) return
+		let next = state
+		if (state.t !== null) {
+			const clamped = clampT(state.t, nowMs, state.window)
+			if (clamped !== state.t) next = { ...next, t: clamped }
+		}
+		const tMsNext = next.t !== null ? next.t * 1000 : null
+		if (next.event !== null && tMsNext !== null) {
+			const selected = events.find((e) => e.eventId === next.event)
+			if (selected && shouldDeselect(new Date(selected.time).getTime(), tMsNext)) {
+				next = { ...next, event: null }
+			}
+		}
+		if (next !== state) {
+			const qs = serializeAppState(next)
 			router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
 		}
-	}, [tMs, state.event, events])
+	}, [hasClock, state.t, state.window, state.event, events])
 	// oxlint-enable react-hooks/exhaustive-deps
 
 	const mapHandleRef = useRef<QuakeMapHandle | null>(null)
