@@ -4,6 +4,7 @@ import { useEventsQuery, WINDOW_CONFIG, type TimeWindow } from '@quakewatch/core
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState, type ReactNode } from 'react'
 
+import { QuakeMap } from '@/components/quake-map'
 import { AreaPreset } from '@/components/shell/area-preset'
 import { EventList } from '@/components/shell/event-list'
 import { Header } from '@/components/shell/header'
@@ -91,11 +92,9 @@ export function HomeClient() {
 				<SideFooter />
 			</div>
 
-			{/* Mappa: placeholder per il T10 */}
-			<div className="dot-grid col-start-1 row-start-1 flex items-center justify-center bg-card md:col-start-2">
-				<span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-					MAPPA · T10
-				</span>
+			{/* Mappa */}
+			<div className="col-start-1 row-start-1 overflow-hidden bg-card md:col-start-2">
+				<QuakeMap events={events} selectedId={state.event} onSelect={handleSelectEvent} />
 			</div>
 
 			<TimelineSlot />

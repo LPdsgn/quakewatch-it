@@ -32,6 +32,9 @@ importers:
       '@quakewatch/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@quakewatch/tokens':
+        specifier: workspace:*
+        version: link:../../packages/tokens
       '@tanstack/react-query':
         specifier: ^5.101.4
         version: 5.101.4(react@19.2.4)
