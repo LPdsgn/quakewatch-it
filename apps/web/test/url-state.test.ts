@@ -9,6 +9,7 @@ describe('parseAppState', () => {
 			area: 'italia',
 			event: null,
 			variant: 'default',
+			t: null,
 		})
 	})
 	it('valori validi passano', () => {
@@ -17,6 +18,7 @@ describe('parseAppState', () => {
 			area: 'campi-flegrei',
 			event: '123',
 			variant: 'default',
+			t: null,
 		})
 	})
 	it('window/area invalidi → default; event non numerico → null', () => {
@@ -25,6 +27,7 @@ describe('parseAppState', () => {
 			area: 'italia',
 			event: null,
 			variant: 'default',
+			t: null,
 		})
 	})
 	it('variant=detail-float → passa', () => {
@@ -33,6 +36,7 @@ describe('parseAppState', () => {
 			area: 'italia',
 			event: null,
 			variant: 'detail-float',
+			t: null,
 		})
 	})
 	it('variant invalido → default', () => {
@@ -41,24 +45,52 @@ describe('parseAppState', () => {
 			area: 'italia',
 			event: null,
 			variant: 'default',
+			t: null,
 		})
+	})
+	it('t numerico → epoch secondi', () => {
+		expect(parseAppState(new URLSearchParams('t=1754130000')).t).toBe(1754130000)
+	})
+
+	it('t non numerico o assente → null', () => {
+		expect(parseAppState(new URLSearchParams('t=abc')).t).toBeNull()
+		expect(parseAppState(new URLSearchParams('t=-5')).t).toBeNull()
+		expect(parseAppState(new URLSearchParams('')).t).toBeNull()
 	})
 })
 
 describe('serializeAppState', () => {
 	it('omette i default (URL pulito)', () => {
 		expect(
-			serializeAppState({ window: '24h', area: 'italia', event: null, variant: 'default' })
+			serializeAppState({
+				window: '24h',
+				area: 'italia',
+				event: null,
+				variant: 'default',
+				t: null,
+			})
 		).toBe('')
 	})
 	it('serializza solo il non-default, ordine stabile', () => {
 		expect(
-			serializeAppState({ window: '90d', area: 'etna', event: '42', variant: 'default' })
+			serializeAppState({
+				window: '90d',
+				area: 'etna',
+				event: '42',
+				variant: 'default',
+				t: null,
+			})
 		).toBe('window=90d&area=etna&event=42')
 	})
 	it('variant non-default in coda, ordine stabile', () => {
 		expect(
-			serializeAppState({ window: '24h', area: 'italia', event: null, variant: 'detail-float' })
+			serializeAppState({
+				window: '24h',
+				area: 'italia',
+				event: null,
+				variant: 'detail-float',
+				t: null,
+			})
 		).toBe('variant=detail-float')
 	})
 	it('roundtrip', () => {
@@ -67,7 +99,16 @@ describe('serializeAppState', () => {
 			area: 'campi-flegrei',
 			event: '9',
 			variant: 'detail-float' as const,
+			t: null,
 		}
 		expect(parseAppState(new URLSearchParams(serializeAppState(s)))).toEqual(s)
+	})
+	it('serializza t in coda, omesso se null', () => {
+		const base = { window: '24h', area: 'italia', event: null, variant: 'default' } as const
+		expect(serializeAppState({ ...base, t: 1754130000 })).toBe('t=1754130000')
+		expect(serializeAppState({ ...base, t: null })).toBe('')
+		expect(serializeAppState({ ...base, window: '7d', t: 1754130000 })).toBe(
+			'window=7d&t=1754130000'
+		)
 	})
 })

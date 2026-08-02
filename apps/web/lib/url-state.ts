@@ -8,12 +8,14 @@ export interface AppState {
 	area: string
 	event: string | null
 	variant: Variant
+	/** Cursore timeline, epoch secondi; null = live (Piano 4). */
+	t: number | null
 }
 
 /**
  * Parsa i parametri URL in AppState con validazione.
- * Valori non validi o assenti usano i default: window='24h', area='italia', event=null, variant='default'.
- * L'area deve esistere in findAreaPreset; l'event deve essere numerico (^\d+$); variant deve essere 'detail-float'.
+ * Valori non validi o assenti usano i default: window='24h', area='italia', event=null, variant='default', t=null.
+ * L'area deve esistere in findAreaPreset; l'event e il t devono essere numerici (^\d+$); variant deve essere 'detail-float'.
  */
 export function parseAppState(params: URLSearchParams): AppState {
 	// window: valida contro TIME_WINDOWS, default '24h'
@@ -34,13 +36,18 @@ export function parseAppState(params: URLSearchParams): AppState {
 	// variant: solo 'detail-float' è riconosciuto, ogni altro valore (o assenza) → 'default'
 	const variant: Variant = params.get('variant') === 'detail-float' ? 'detail-float' : 'default'
 
-	return { window, area, event, variant }
+	// t: epoch secondi, solo formato — il clamp su finestra/adesso vive in clampT (lib/timeline.ts),
+	// perché qui non c'è (e non deve esserci) Date.now: parse pura, stessa su server e client.
+	const tParam = params.get('t')
+	const t = tParam && /^\d+$/.test(tParam) ? Number(tParam) : null
+
+	return { window, area, event, variant, t }
 }
 
 /**
  * Serializza AppState in query string.
  * Omette i valori di default per produrre URL puliti.
- * Ordine stabile: window, area, event, variant.
+ * Ordine stabile: window, area, event, variant, t.
  */
 export function serializeAppState(state: AppState): string {
 	const params = new URLSearchParams()
@@ -57,6 +64,9 @@ export function serializeAppState(state: AppState): string {
 	}
 	if (state.variant !== 'default') {
 		params.append('variant', state.variant)
+	}
+	if (state.t !== null) {
+		params.append('t', String(state.t))
 	}
 
 	return params.toString()
