@@ -38,6 +38,10 @@ export function HomeClient() {
 	// già innescato dal cambio di stato.event via router.replace.
 	const lastClearedIdRef = useRef<string | null>(null)
 
+	// Toggle ShakeMap (T5): si azzera a ogni cambio di evento selezionato e alla chiusura
+	// del dettaglio (handleSelectEvent/handleClearEvent sotto), mai persistito nell'URL.
+	const [showShakemap, setShowShakemap] = useState(false)
+
 	// Orologio condiviso (Header + lista eventi): un solo interval per la pagina, mai
 	// Date.now() in render SSR (lezione prototipo) → null finché non ha ticchettato.
 	const [nowMs, setNowMs] = useState<number | null>(null)
@@ -54,11 +58,13 @@ export function HomeClient() {
 	}
 
 	function handleSelectEvent(eventId: string) {
+		setShowShakemap(false)
 		const qs = serializeAppState({ ...state, event: eventId })
 		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
 	}
 
 	function handleClearEvent() {
+		setShowShakemap(false)
 		lastClearedIdRef.current = state.event
 		const qs = serializeAppState({ ...state, event: null })
 		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
@@ -71,7 +77,14 @@ export function HomeClient() {
 
 	let listSlot: ReactNode
 	if (state.event !== null) {
-		listSlot = <EventDetail eventId={state.event} onBack={handleClearEvent} />
+		listSlot = (
+			<EventDetail
+				eventId={state.event}
+				onBack={handleClearEvent}
+				showShakemap={showShakemap}
+				onToggleShakemap={setShowShakemap}
+			/>
+		)
 	} else if (isLoading) {
 		listSlot = (
 			<div className="flex flex-1 flex-col gap-1.5 overflow-hidden rounded-xl border border-border bg-card p-2">
@@ -132,9 +145,9 @@ export function HomeClient() {
 					selectedId={state.event}
 					onSelect={handleSelectEvent}
 					isLive={state.window === '24h'}
+					showShakemap={showShakemap}
 				/>
-				{/* showMmi=false per ora: T5 la wira davvero quando arriva ShakeMap. */}
-				<MapLegend showMmi={false} />
+				<MapLegend showMmi={showShakemap} />
 			</div>
 
 			{/* Timeline: solo desktop. Sotto md è un placeholder (Piano 3 la sostituisce con la

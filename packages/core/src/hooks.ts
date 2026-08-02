@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import type { RevisionStatus } from './revisions'
+import type { ShakemapContours } from './shakemap'
 import type { Earthquake, EventDetail } from './types'
 import type { TimeWindow } from './windows'
 
@@ -38,5 +39,22 @@ export function useEventDetailQuery(eventId: string | null) {
 		queryKey: ['event-detail', eventId],
 		queryFn: () => fetchJson<EventDetailResponse>(`/api/events/${eventId}`),
 		enabled: eventId !== null,
+	})
+}
+
+/** 404 = assenza prodotto, stato normale (non un errore): ritorna null invece di lanciare. */
+async function fetchShakemap(eventId: string): Promise<ShakemapContours | null> {
+	const res = await fetch(`/api/events/${eventId}/shakemap`)
+	if (res.status === 404) return null
+	if (!res.ok) throw new Error(`proxy ${res.status}`)
+	return res.json() as Promise<ShakemapContours>
+}
+
+export function useShakemapQuery(eventId: string | null, enabled: boolean) {
+	return useQuery({
+		queryKey: ['shakemap', eventId],
+		queryFn: () => fetchShakemap(eventId as string),
+		enabled: enabled && eventId !== null,
+		staleTime: 300_000,
 	})
 }

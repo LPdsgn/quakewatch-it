@@ -1,6 +1,6 @@
 'use client'
 
-import type { Earthquake } from '@quakewatch/core'
+import { useShakemapQuery, type Earthquake } from '@quakewatch/core'
 import {
 	MAGNITUDE_COLORS,
 	RED,
@@ -24,6 +24,8 @@ export interface QuakeMapProps {
 	onSelect: (eventId: string) => void
 	/** Pulse è l'affordance della modalità live: gate aggiuntivo insieme all'età <24h. */
 	isLive: boolean
+	/** Toggle dal dettaglio evento (T5): mostra i contorni ShakeMap dell'evento selezionato. */
+	showShakemap: boolean
 }
 
 const CENTER: [number, number] = [12.5, 42.3]
@@ -36,7 +38,7 @@ const MIN_AGED_OPACITY = 0.35
 const PULSE_WINDOW_MS = 24 * 3_600_000
 const PULSE_CYCLE_MS = 2400
 
-export function QuakeMap({ events, selectedId, onSelect, isLive }: QuakeMapProps) {
+export function QuakeMap({ events, selectedId, onSelect, isLive, showShakemap }: QuakeMapProps) {
 	// resolvedTheme è undefined in SSR: default 'theme-dark' finché non montato (lezione header.tsx).
 	const { resolvedTheme } = useTheme()
 	const [mounted, setMounted] = useState(false)
@@ -51,6 +53,10 @@ export function QuakeMap({ events, selectedId, onSelect, isLive }: QuakeMapProps
 	)
 	const foregroundColor = SEMANTIC_TOKENS[themeName].foreground as string
 	const magnitudeColors = MAGNITUDE_COLORS[themeName]
+
+	// Condivide la cache con l'hook già montato in EventDetail (stesso queryKey): qui abilitato solo
+	// a toggle attivo, niente fetch duplicata (staleTime 300s copre il giro toggle on/off).
+	const { data: shakemapContours } = useShakemapQuery(selectedId, showShakemap)
 
 	const mapRef = useRef<MapRef | null>(null)
 	const [mapLoaded, setMapLoaded] = useState(false)
@@ -181,6 +187,23 @@ export function QuakeMap({ events, selectedId, onSelect, isLive }: QuakeMapProps
 			onLoad={() => setMapLoaded(true)}
 			onError={(e) => console.error('MAPLIBRE ERROR:', e.error?.message ?? e)}
 		>
+			{showShakemap && shakemapContours && (
+				<Source id="shakemap" type="geojson" data={shakemapContours}>
+					{/* beforeId, non l'ordine JSX, decide lo stacking: sotto events-pulse → sotto
+					    tutti i layer epicentro. weight non è garantito a runtime dalla guardia
+					    isShakemapContours: coalesce a 1 prima del cap a 3. */}
+					<Layer
+						id="shakemap-contours"
+						type="line"
+						beforeId="events-pulse"
+						paint={{
+							'line-color': ['get', 'color'],
+							'line-width': ['min', ['coalesce', ['get', 'weight'], 1], 3],
+							'line-opacity': 0.9,
+						}}
+					/>
+				</Source>
+			)}
 			<Source id="events" type="geojson" data={geojson}>
 				<Layer
 					id="events-pulse"

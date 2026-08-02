@@ -2,6 +2,7 @@
 
 import {
 	useEventDetailQuery,
+	useShakemapQuery,
 	type EventDetail as EventDetailData,
 	type EventDetailResponse,
 } from '@quakewatch/core'
@@ -17,6 +18,8 @@ import { cn } from '@/lib/utils'
 export interface EventDetailProps {
 	eventId: string
 	onBack: () => void
+	showShakemap: boolean
+	onToggleShakemap: (next: boolean) => void
 }
 
 const INGV_EVENT_URL = 'https://terremoti.ingv.it/event/'
@@ -41,8 +44,11 @@ function formatCoords(latitude: number, longitude: number): string {
 }
 
 /** Pannello di dettaglio evento: scorre sopra la lista nella stessa colonna sidebar (T11). */
-export function EventDetail({ eventId, onBack }: EventDetailProps) {
+export function EventDetail({ eventId, onBack, showShakemap, onToggleShakemap }: EventDetailProps) {
 	const { data, isLoading, isError } = useEventDetailQuery(eventId)
+	// enabled=true al mount del dettaglio (non legato al toggle): serve a sapere SUBITO se il
+	// prodotto esiste, per mostrare toggle o riga muted. Stessa queryKey di QuakeMap → cache condivisa.
+	const shakemap = useShakemapQuery(eventId, true)
 
 	// Il pannello sostituisce la lista: sposta il focus su "Indietro" (a11y, niente focus perso
 	// nel vuoto quando il nodo precedente scompare).
@@ -61,7 +67,16 @@ export function EventDetail({ eventId, onBack }: EventDetailProps) {
 			</p>
 		)
 	} else {
-		body = <DetailBody eventId={eventId} data={data} />
+		body = (
+			<DetailBody
+				eventId={eventId}
+				data={data}
+				shakemapLoading={shakemap.isLoading}
+				shakemapAvailable={shakemap.data != null}
+				showShakemap={showShakemap}
+				onToggleShakemap={onToggleShakemap}
+			/>
+		)
 	}
 
 	return (
@@ -90,7 +105,23 @@ function DetailSkeleton() {
 	)
 }
 
-function DetailBody({ eventId, data }: { eventId: string; data: EventDetailResponse }) {
+interface DetailBodyProps {
+	eventId: string
+	data: EventDetailResponse
+	shakemapLoading: boolean
+	shakemapAvailable: boolean
+	showShakemap: boolean
+	onToggleShakemap: (next: boolean) => void
+}
+
+function DetailBody({
+	eventId,
+	data,
+	shakemapLoading,
+	shakemapAvailable,
+	showShakemap,
+	onToggleShakemap,
+}: DetailBodyProps) {
 	const { detail, revisionStatus, hasRevisions } = data
 	const { preferredOrigin, preferredMagnitude, locationName } = detail
 	const isRevisto = revisionStatus === 'rivisto'
@@ -122,6 +153,15 @@ function DetailBody({ eventId, data }: { eventId: string; data: EventDetailRespo
 
 			{hasRevisions && <RevisionHistory detail={detail} />}
 
+			{!shakemapLoading &&
+				(shakemapAvailable ? (
+					<ShakemapToggle showShakemap={showShakemap} onToggleShakemap={onToggleShakemap} />
+				) : (
+					<p className="border-t border-border pt-3 text-xs text-muted-foreground">
+						ShakeMap non disponibile per questo evento
+					</p>
+				))}
+
 			<a
 				href={`${INGV_EVENT_URL}${eventId}`}
 				target="_blank"
@@ -131,6 +171,31 @@ function DetailBody({ eventId, data }: { eventId: string; data: EventDetailRespo
 				Scheda INGV ↗
 			</a>
 		</>
+	)
+}
+
+/** Bottone toggle stile area-preset.tsx (aria-pressed su elemento nativo, niente switch dedicato). */
+function ShakemapToggle({
+	showShakemap,
+	onToggleShakemap,
+}: {
+	showShakemap: boolean
+	onToggleShakemap: (next: boolean) => void
+}) {
+	return (
+		<div className="border-t border-border pt-3">
+			<button
+				type="button"
+				aria-pressed={showShakemap}
+				onClick={() => onToggleShakemap(!showShakemap)}
+				className={cn(
+					'rounded-lg border border-border px-2.5 py-1.5 text-xs',
+					showShakemap ? 'bg-muted text-foreground' : 'text-muted-foreground'
+				)}
+			>
+				Scuotimento (ShakeMap)
+			</button>
+		</div>
 	)
 }
 

@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { useEventDetailQuery, useEventsQuery } from '../src/hooks'
+import { useEventDetailQuery, useEventsQuery, useShakemapQuery } from '../src/hooks'
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
 	<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
@@ -39,6 +39,43 @@ describe('useEventDetailQuery', () => {
 		const fetchMock = vi.fn()
 		vi.stubGlobal('fetch', fetchMock)
 		const { result } = renderHook(() => useEventDetailQuery(null), { wrapper })
+		expect(result.current.fetchStatus).toBe('idle')
+		expect(fetchMock).not.toHaveBeenCalled()
+	})
+})
+
+describe('useShakemapQuery', () => {
+	it('404 → data null SENZA isError (assenza prodotto è stato normale)', async () => {
+		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 404 })))
+		const { result } = renderHook(() => useShakemapQuery('46725592', true), { wrapper })
+		await waitFor(() => expect(result.current.isSuccess).toBe(true))
+		expect(result.current.data).toBeNull()
+		expect(result.current.isError).toBe(false)
+	})
+
+	it('200 → ritorna la FeatureCollection', async () => {
+		const body = { type: 'FeatureCollection', features: [] }
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }))
+		)
+		const { result } = renderHook(() => useShakemapQuery('46725592', true), { wrapper })
+		await waitFor(() => expect(result.current.isSuccess).toBe(true))
+		expect(result.current.data).toEqual(body)
+	})
+
+	it('enabled=false → query disabilitata (nessuna fetch)', () => {
+		const fetchMock = vi.fn()
+		vi.stubGlobal('fetch', fetchMock)
+		const { result } = renderHook(() => useShakemapQuery('46725592', false), { wrapper })
+		expect(result.current.fetchStatus).toBe('idle')
+		expect(fetchMock).not.toHaveBeenCalled()
+	})
+
+	it('eventId null → query disabilitata anche con enabled=true', () => {
+		const fetchMock = vi.fn()
+		vi.stubGlobal('fetch', fetchMock)
+		const { result } = renderHook(() => useShakemapQuery(null, true), { wrapper })
 		expect(result.current.fetchStatus).toBe('idle')
 		expect(fetchMock).not.toHaveBeenCalled()
 	})
