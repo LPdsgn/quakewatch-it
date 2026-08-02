@@ -1,6 +1,6 @@
 @import 'tailwindcss';
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 @import './theme.css';
 
 @custom-variant dark (&:where(.theme-dark, .theme-dark *));
@@ -69,7 +69,9 @@ body {
 /* Tutti i dati numerici: tabular + zero barrato (spec §3) */
 .font-mono,
 [data-numeric] {
-	font-feature-settings: 'tnum' 1, 'zero' 1;
+	font-feature-settings:
+		'tnum' 1,
+		'zero' 1;
 }
 
 /* Texture per i pannelli placeholder (mappa T10, timeline T3, liste vuote): mai hex, solo token. */
@@ -83,10 +85,11 @@ body {
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+	* {
+		@apply border-border outline-ring/50;
 	}
-  button:not(:disabled), [role="button"]:not(:disabled) {
-    cursor: pointer;
+	button:not(:disabled),
+	[role='button']:not(:disabled) {
+		cursor: pointer;
 	}
 }
