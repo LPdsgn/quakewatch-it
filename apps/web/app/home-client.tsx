@@ -4,6 +4,7 @@ import { useEventsQuery, WINDOW_CONFIG, type TimeWindow } from '@quakewatch/core
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 
+import { MapLegend } from '@/components/map-legend'
 import { QuakeMap } from '@/components/quake-map'
 import { AreaPreset } from '@/components/shell/area-preset'
 import { EventDetail } from '@/components/shell/event-detail'
@@ -125,13 +126,15 @@ export function HomeClient() {
 			</div>
 
 			{/* Mappa */}
-			<div className="col-start-1 row-start-1 overflow-hidden bg-card md:col-start-2">
+			<div className="relative col-start-1 row-start-1 overflow-hidden bg-card md:col-start-2">
 				<QuakeMap
 					events={events}
 					selectedId={state.event}
 					onSelect={handleSelectEvent}
 					isLive={state.window === '24h'}
 				/>
+				{/* showMmi=false per ora: T5 la wira davvero quando arriva ShakeMap. */}
+				<MapLegend showMmi={false} />
 			</div>
 
 			{/* Timeline: solo desktop. Sotto md è un placeholder (Piano 3 la sostituisce con la
