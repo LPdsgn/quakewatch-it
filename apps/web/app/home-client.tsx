@@ -123,9 +123,14 @@ export function HomeClient() {
 		)
 	}
 
+	// key={state.event}: forza il remount (quindi il refocus sul back/chiusura, EventBackButton
+	// in event-detail.tsx) quando si passa da un evento all'altro a dettaglio già aperto — in
+	// variante B (float) la lista resta cliccabile col riquadro aperto, quindi questo è l'unico
+	// evento che aggiorna il dettaglio senza uno smontaggio precedente (niente unmount→mount).
 	const detailNode =
 		state.event !== null ? (
 			<EventDetail
+				key={state.event}
 				eventId={state.event}
 				onBack={handleClearEvent}
 				showShakemap={showShakemap}
