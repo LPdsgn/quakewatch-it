@@ -44,8 +44,6 @@ export function QuakeMap({ events, selectedId, onSelect, isLive }: QuakeMapProps
 		() => buildMapStyle(themeName) as unknown as StyleSpecification,
 		[themeName]
 	)
-	// Nero costante nei due temi (stesso token dello scrim overlay): lo stroke resta scuro sempre.
-	const strokeColor = SEMANTIC_TOKENS[themeName].overlay as string
 	const neutralColor = SEMANTIC_TOKENS[themeName]['muted-foreground'] as string
 
 	const mapRef = useRef<MapRef | null>(null)
@@ -81,6 +79,10 @@ export function QuakeMap({ events, selectedId, onSelect, isLive }: QuakeMapProps
 				type: 'FeatureCollection' as const,
 				features: events.map((e) => {
 					const isSelected = e.eventId === selectedId
+					// rosso accento: evento selezionato, o il più recente quando nulla è selezionato
+					// (spec §2 "recenza in accento rosso"; sarà superato dalla codifica bivariata del Piano 3)
+					const isAccent =
+						isSelected || (selectedId === null && e.eventId === mostRecent?.eventId)
 					const ageHours = (now - new Date(e.time).getTime()) / 3_600_000
 					const opacity = isSelected
 						? 1
@@ -96,7 +98,7 @@ export function QuakeMap({ events, selectedId, onSelect, isLive }: QuakeMapProps
 						properties: {
 							eventId: e.eventId,
 							magnitude: e.magnitude,
-							color: isSelected ? RED[500] : neutralColor,
+							color: isAccent ? RED[500] : neutralColor,
 							opacity,
 							isPulse: e.eventId === pulse,
 						},
@@ -196,9 +198,6 @@ export function QuakeMap({ events, selectedId, onSelect, isLive }: QuakeMapProps
 						'circle-radius': ['+', 3, ['*', ['get', 'magnitude'], 2.2]],
 						'circle-color': ['get', 'color'],
 						'circle-opacity': ['get', 'opacity'],
-						'circle-stroke-width': 1,
-						'circle-stroke-color': strokeColor,
-						'circle-stroke-opacity': 0.6,
 					}}
 				/>
 			</Source>
