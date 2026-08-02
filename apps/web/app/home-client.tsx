@@ -17,11 +17,15 @@ import { Strongest } from '@/components/shell/strongest'
 import { Summary } from '@/components/shell/summary'
 import { TimelineSlot } from '@/components/shell/timeline-slot'
 import { Skeleton } from '@/components/ui/skeleton'
+import { SHEET_HALF, SHEET_PEEK } from '@/lib/layout-constants'
 import { parseAppState, serializeAppState, type Variant } from '@/lib/url-state'
 import { cn } from '@/lib/utils'
 
 // Switcher A/B (T6): solo dev, mai in produzione — la variante resta comunque raggiungibile
 // via URL (?variant=detail-float) indipendentemente da questo toggle.
+// Verdetto A/B 2026-08-02: vince B (float). Variante A e switcher restano DI PROPOSITO
+// (decisione utente post-verdetto): candidati a diventare un controllo avanzato di layout
+// (es. expert mode, Piano 4+) invece di essere rimossi.
 const SHOW_VARIANT_SWITCHER = process.env.NODE_ENV !== 'production'
 
 const WINDOW_TEXT: Record<TimeWindow, string> = {
@@ -51,6 +55,17 @@ export function HomeClient() {
 	// un effect sull'evento è l'unico modo di azzerarlo in ogni caso.
 	const [showShakemap, setShowShakemap] = useState(false)
 	useEffect(() => setShowShakemap(false), [state.event])
+
+	// Snap del sheet mobile, alzato qui perché la legenda mappa si ancora allo snap REALE
+	// (finding review finale: a HALF col dettaglio aperto la pill restava coperta dal Drawer).
+	// Init lazy sull'evento iniziale (deep-link → HALF, niente flash PEEK→HALF); selezionare
+	// un evento porta a HALF, il "indietro" NON resetta (resta dov'era, scelta intenzionale).
+	const [sheetSnap, setSheetSnap] = useState<number>(() =>
+		state.event !== null ? SHEET_HALF : SHEET_PEEK
+	)
+	useEffect(() => {
+		if (state.event !== null) setSheetSnap(SHEET_HALF)
+	}, [state.event])
 
 	// Orologio condiviso (Header + lista eventi): un solo interval per la pagina, mai
 	// Date.now() in render SSR (lezione prototipo) → null finché non ha ticchettato.
@@ -199,7 +214,7 @@ export function HomeClient() {
 					isLive={state.window === '24h'}
 					showShakemap={showShakemap}
 				/>
-				<MapLegend showMmi={showShakemap} />
+				<MapLegend showMmi={showShakemap} sheetSnap={sheetSnap} />
 				{state.variant === 'detail-float' && detailNode && (
 					<EventDetailFloat>{detailNode}</EventDetailFloat>
 				)}
@@ -251,6 +266,8 @@ export function HomeClient() {
 				eventId={state.event}
 				nowMs={nowMs}
 				listSlot={listSlot}
+				snapPoint={sheetSnap}
+				onSnapPointChange={setSheetSnap}
 				onSelectEvent={handleSelectEvent}
 				onAreaWindowChange={handleAreaWindowChange}
 			/>

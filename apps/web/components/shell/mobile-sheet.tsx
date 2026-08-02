@@ -1,7 +1,7 @@
 'use client'
 
 import type { Earthquake, TimeWindow } from '@quakewatch/core'
-import { useEffect, useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
 import { AreaPreset } from '@/components/shell/area-preset'
 import { EventList } from '@/components/shell/event-list'
@@ -9,14 +9,12 @@ import { SideFooter } from '@/components/shell/side-footer'
 import { Strongest } from '@/components/shell/strongest'
 import { Summary } from '@/components/shell/summary'
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
-import { SHEET_PEEK } from '@/lib/layout-constants'
+import { SHEET_FULL, SHEET_HALF, SHEET_PEEK } from '@/lib/layout-constants'
 
-const HALF = 0.5
-const FULL = 0.85
-const SNAP_POINTS = [SHEET_PEEK, HALF, FULL]
+const SNAP_POINTS = [SHEET_PEEK, SHEET_HALF, SHEET_FULL]
 // Col dettaglio aperto FULL sparisce dai punti raggiungibili: HALF basta per le informazioni
 // e tiene visibile la porzione di mappa con l'epicentro selezionato.
-const SNAP_POINTS_DETAIL = [SHEET_PEEK, HALF]
+const SNAP_POINTS_DETAIL = [SHEET_PEEK, SHEET_HALF]
 
 export interface MobileSheetProps {
 	events: Earthquake[]
@@ -29,6 +27,9 @@ export interface MobileSheetProps {
 	nowMs: number | null
 	/** Stesso nodo del ramo desktop (T8/T11): dettaglio, skeleton, vuoto o lista — invariato. */
 	listSlot: ReactNode
+	/** Stato snap alzato in home-client: la legenda mappa si ancora allo snap reale, non a PEEK. */
+	snapPoint: number
+	onSnapPointChange: (snapPoint: number) => void
 	onSelectEvent: (eventId: string) => void
 	onAreaWindowChange: (area: string, window: TimeWindow) => void
 }
@@ -46,20 +47,11 @@ export function MobileSheet({
 	eventId,
 	nowMs,
 	listSlot,
+	snapPoint,
+	onSnapPointChange,
 	onSelectEvent,
 	onAreaWindowChange,
 }: MobileSheetProps) {
-	// Init lazy sull'eventId iniziale: su deep-link con evento in URL evita il flash
-	// PEEK→HALF al primo render (altrimenti si vedrebbe un frame a peek prima dell'effect).
-	const [snapPoint, setSnapPoint] = useState<number>(() => (eventId !== null ? HALF : SHEET_PEEK))
-
-	// Selezionare un evento porta il sheet a metà altezza (cap: mai FULL col dettaglio aperto).
-	// Il "indietro" (eventId → null) NON resetta lo snap point: scelta intenzionale, non
-	// svista — resta dov'era invece di risnappare a PEEK a sorpresa.
-	useEffect(() => {
-		if (eventId !== null) setSnapPoint(HALF)
-	}, [eventId])
-
 	const mostRecent = events.toSorted((a, b) => b.time.localeCompare(a.time))[0] ?? null
 
 	let body: ReactNode
@@ -108,7 +100,7 @@ export function MobileSheet({
 			snapPoints={eventId !== null ? SNAP_POINTS_DETAIL : SNAP_POINTS}
 			snapPoint={snapPoint}
 			onSnapPointChange={(next) => {
-				if (typeof next === 'number') setSnapPoint(next)
+				if (typeof next === 'number') onSnapPointChange(next)
 			}}
 		>
 			<DrawerContent
