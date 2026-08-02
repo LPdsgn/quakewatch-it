@@ -6,6 +6,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { AreaPreset } from '@/components/shell/area-preset'
 import { EventList } from '@/components/shell/event-list'
 import { SideFooter } from '@/components/shell/side-footer'
+import { Strongest } from '@/components/shell/strongest'
 import { Summary } from '@/components/shell/summary'
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import { SHEET_PEEK } from '@/lib/layout-constants'
@@ -64,7 +65,12 @@ export function MobileSheet({
 	} else if (snapPoint === SHEET_PEEK) {
 		body = (
 			<>
-				<Summary events={events} isLoading={isLoading} />
+				<Summary
+					events={events}
+					isLoading={isLoading}
+					onSelectEvent={onSelectEvent}
+					nowMs={nowMs}
+				/>
 				<EventList
 					events={mostRecent ? [mostRecent] : []}
 					selectedId={null}
@@ -76,6 +82,12 @@ export function MobileSheet({
 	} else {
 		body = (
 			<>
+				<Strongest
+					events={events}
+					selectedId={eventId}
+					onSelect={onSelectEvent}
+					nowMs={nowMs}
+				/>
 				<AreaPreset area={area} window={window} onChange={onAreaWindowChange} />
 				{listSlot}
 				<SideFooter />

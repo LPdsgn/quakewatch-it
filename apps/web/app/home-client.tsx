@@ -13,6 +13,7 @@ import { EventList } from '@/components/shell/event-list'
 import { Header } from '@/components/shell/header'
 import { MobileSheet } from '@/components/shell/mobile-sheet'
 import { SideFooter } from '@/components/shell/side-footer'
+import { Strongest } from '@/components/shell/strongest'
 import { Summary } from '@/components/shell/summary'
 import { TimelineSlot } from '@/components/shell/timeline-slot'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -151,7 +152,19 @@ export function HomeClient() {
 			{/* Sidebar: sotto md sparisce, sostituita dal bottom sheet (mobile-sheet.tsx) */}
 			<div className="col-start-1 row-start-1 row-span-2 hidden flex-col gap-2 overflow-hidden bg-sidebar p-2 md:flex">
 				<Header isLive={state.window === '24h'} nowMs={nowMs} />
-				<Summary events={events} isLoading={isLoading} hasError={isError} />
+				<Summary
+					events={events}
+					isLoading={isLoading}
+					hasError={isError}
+					onSelectEvent={handleSelectEvent}
+					nowMs={nowMs}
+				/>
+				<Strongest
+					events={events}
+					selectedId={state.event}
+					onSelect={handleSelectEvent}
+					nowMs={nowMs}
+				/>
 				<AreaPreset area={state.area} window={state.window} onChange={handleAreaWindowChange} />
 				{sidebarSlot}
 				<SideFooter />
@@ -163,7 +176,13 @@ export function HomeClient() {
 			<div className="pointer-events-none relative z-10 col-start-1 row-start-1 flex flex-col gap-2 p-2 pt-[env(safe-area-inset-top)] md:hidden">
 				<div className="pointer-events-auto flex flex-col gap-2 pt-2">
 					<Header isLive={state.window === '24h'} nowMs={nowMs} />
-					<Summary events={events} isLoading={isLoading} hasError={isError} />
+					<Summary
+						events={events}
+						isLoading={isLoading}
+						hasError={isError}
+						onSelectEvent={handleSelectEvent}
+						nowMs={nowMs}
+					/>
 				</div>
 			</div>
 
