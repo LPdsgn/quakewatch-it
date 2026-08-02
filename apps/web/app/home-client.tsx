@@ -6,6 +6,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 
 import { QuakeMap } from '@/components/quake-map'
 import { AreaPreset } from '@/components/shell/area-preset'
+import { EventDetail } from '@/components/shell/event-detail'
 import { EventList } from '@/components/shell/event-list'
 import { Header } from '@/components/shell/header'
 import { SideFooter } from '@/components/shell/side-footer'
@@ -50,13 +51,20 @@ export function HomeClient() {
 		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
 	}
 
+	function handleClearEvent() {
+		const qs = serializeAppState({ ...state, event: null })
+		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+	}
+
 	const threshold = WINDOW_CONFIG[state.window].minMagnitude
 	const emptyLabel = threshold
 		? `Nessun evento M≥${threshold} ${WINDOW_TEXT[state.window]}`
 		: `Nessun evento ${WINDOW_TEXT[state.window]}`
 
 	let listSlot: ReactNode
-	if (isLoading) {
+	if (state.event !== null) {
+		listSlot = <EventDetail eventId={state.event} onBack={handleClearEvent} />
+	} else if (isLoading) {
 		listSlot = (
 			<div className="flex flex-1 flex-col gap-1.5 overflow-hidden rounded-xl border border-border bg-card p-2">
 				{Array.from({ length: 5 }, (_, i) => (
