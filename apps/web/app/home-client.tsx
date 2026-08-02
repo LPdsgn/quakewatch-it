@@ -9,6 +9,7 @@ import { AreaPreset } from '@/components/shell/area-preset'
 import { EventDetail } from '@/components/shell/event-detail'
 import { EventList } from '@/components/shell/event-list'
 import { Header } from '@/components/shell/header'
+import { MobileSheet } from '@/components/shell/mobile-sheet'
 import { SideFooter } from '@/components/shell/side-footer'
 import { Summary } from '@/components/shell/summary'
 import { TimelineSlot } from '@/components/shell/timeline-slot'
@@ -91,13 +92,21 @@ export function HomeClient() {
 
 	return (
 		<div className="grid h-screen w-screen grid-cols-1 grid-rows-1 bg-background text-foreground md:grid-cols-[360px_1fr] md:grid-rows-[1fr_72px]">
-			{/* Sidebar: sotto md sparisce (il bottom sheet arriva nel T12) */}
+			{/* Sidebar: sotto md sparisce, sostituita dal bottom sheet (mobile-sheet.tsx) */}
 			<div className="col-start-1 row-start-1 row-span-2 hidden flex-col gap-2 overflow-hidden bg-sidebar p-2 md:flex">
 				<Header isLive={state.window === '24h'} nowMs={nowMs} />
 				<Summary events={events} isLoading={isLoading} />
 				<AreaPreset area={state.area} window={state.window} onChange={handleAreaWindowChange} />
 				{listSlot}
 				<SideFooter />
+			</div>
+
+			{/* Chips riepilogo mobile: overlay sopra la mappa (z-10: precede la mappa nel DOM, stesso
+			    grid cell), pointer-events-none tranne il contenuto. */}
+			<div className="pointer-events-none relative z-10 col-start-1 row-start-1 flex flex-col gap-2 p-2 pt-[env(safe-area-inset-top)] md:hidden">
+				<div className="pointer-events-auto">
+					<Summary events={events} isLoading={isLoading} />
+				</div>
 			</div>
 
 			{/* Mappa */}
@@ -110,7 +119,22 @@ export function HomeClient() {
 				/>
 			</div>
 
+			{/* Timeline: solo desktop. Sotto md è un placeholder (Piano 3 la sostituisce con la
+			    timeline reale) — costruire ora una variante mobile compatta per un placeholder
+			    sarebbe lavoro rifatto due volte; si riconsidera quando arriva la timeline vera. */}
 			<TimelineSlot />
+
+			<MobileSheet
+				events={events}
+				isLoading={isLoading}
+				area={state.area}
+				window={state.window}
+				eventId={state.event}
+				nowMs={nowMs}
+				listSlot={listSlot}
+				onSelectEvent={handleSelectEvent}
+				onAreaWindowChange={handleAreaWindowChange}
+			/>
 		</div>
 	)
 }
