@@ -11,12 +11,13 @@ import {
 } from '@quakewatch/tokens'
 import type { StyleSpecification } from 'maplibre-gl'
 import { useTheme } from 'next-themes'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { type Ref, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { Layer, Map, Source, type MapRef } from 'react-map-gl/maplibre'
 
 import { toThemeName } from '@/lib/theme'
+import { timeFilterExpression } from '@/lib/timeline'
 
 export interface QuakeMapProps {
 	events: Earthquake[]
@@ -26,6 +27,23 @@ export interface QuakeMapProps {
 	isLive: boolean
 	/** Toggle dal dettaglio evento (T5): mostra i contorni ShakeMap dell'evento selezionato. */
 	showShakemap: boolean
+	/** Filtro temporale dichiarativo (da ?t committato in URL): eventi con timeMs oltre non renderizzati. */
+	timeFilterMs?: number | null
+	/** Handle imperativo per lo scrub (drag): applica il filtro sui layer senza passare da React state. */
+	handleRef?: Ref<QuakeMapHandle>
+}
+
+export interface QuakeMapHandle {
+	/** Applica il filtro tempo direttamente sui layer (drag: zero re-render React). */
+	setTimeFilter(tMs: number | null): void
+}
+
+// I layer hanno già filtri propri (pulse: isPulse; ring: eventId): il filtro tempo si compone
+// in AND. MapLibre accetta expression annidate in ['all', ...].
+function composeFilters(base: unknown[] | null, tMs: number | null): unknown[] | undefined {
+	const time = timeFilterExpression(tMs)
+	if (base && time) return ['all', base, time]
+	return base ?? time ?? undefined
 }
 
 const CENTER: [number, number] = [12.5, 42.3]
@@ -38,7 +56,15 @@ const MIN_AGED_OPACITY = 0.35
 const PULSE_WINDOW_MS = 24 * 3_600_000
 const PULSE_CYCLE_MS = 2400
 
-export function QuakeMap({ events, selectedId, onSelect, isLive, showShakemap }: QuakeMapProps) {
+export function QuakeMap({
+	events,
+	selectedId,
+	onSelect,
+	isLive,
+	showShakemap,
+	timeFilterMs,
+	handleRef,
+}: QuakeMapProps) {
 	// resolvedTheme è undefined in SSR: default 'theme-dark' finché non montato (lezione header.tsx).
 	const { resolvedTheme } = useTheme()
 	const [mounted, setMounted] = useState(false)
@@ -109,6 +135,7 @@ export function QuakeMap({ events, selectedId, onSelect, isLive, showShakemap }:
 							color: magnitudeColors[magnitudeClassOf(e.magnitude).id],
 							opacity,
 							isPulse: e.eventId === pulse,
+							timeMs: new Date(e.time).getTime(),
 						},
 					}
 				}),
@@ -121,6 +148,8 @@ export function QuakeMap({ events, selectedId, onSelect, isLive, showShakemap }:
 	// consuma e salta il flyTo per quel giro (non è una "selezione esterna").
 	const eventsRef = useRef(events)
 	eventsRef.current = events
+	const selectedIdRef = useRef(selectedId)
+	selectedIdRef.current = selectedId
 	const suppressFlyToRef = useRef<string | null>(null)
 	useEffect(() => {
 		if (!mapLoaded || !selectedId) return
@@ -159,6 +188,24 @@ export function QuakeMap({ events, selectedId, onSelect, isLive, showShakemap }:
 			if (map.getLayer('events-pulse')) map.setPaintProperty('events-pulse', 'circle-opacity', 0)
 		}
 	}, [mapLoaded, pulseId, reducedMotion])
+
+	// Percorso imperativo per lo scrub del drag: stessa composeFilters del rendering dichiarativo,
+	// così il re-render a fine drag (nuovo timeFilterMs da props) riallinea senza discontinuità.
+	useImperativeHandle(handleRef, () => ({
+		setTimeFilter(tMs) {
+			const map = mapRef.current?.getMap()
+			if (!map?.getLayer('events-circle')) return
+			map.setFilter('events-circle', composeFilters(null, tMs) as never)
+			map.setFilter(
+				'events-pulse',
+				composeFilters(['==', ['get', 'isPulse'], true], tMs) as never
+			)
+			map.setFilter(
+				'events-selected-ring',
+				composeFilters(['==', ['get', 'eventId'], selectedIdRef.current ?? ''], tMs) as never
+			)
+		},
+	}))
 
 	return (
 		<Map
@@ -208,7 +255,10 @@ export function QuakeMap({ events, selectedId, onSelect, isLive, showShakemap }:
 				<Layer
 					id="events-pulse"
 					type="circle"
-					filter={['==', ['get', 'isPulse'], true]}
+					// base sempre presente ('isPulse'): composeFilters non torna mai undefined qui.
+					filter={
+						composeFilters(['==', ['get', 'isPulse'], true], timeFilterMs ?? null) as never
+					}
 					paint={{
 						'circle-radius': 6,
 						'circle-color': RED[500],
@@ -219,6 +269,10 @@ export function QuakeMap({ events, selectedId, onSelect, isLive, showShakemap }:
 				<Layer
 					id="events-circle"
 					type="circle"
+					{...(() => {
+						const f = composeFilters(null, timeFilterMs ?? null)
+						return f ? { filter: f as never } : {}
+					})()}
 					paint={{
 						'circle-radius': ['+', 3, ['*', ['get', 'magnitude'], 2.2]],
 						'circle-color': ['get', 'color'],
@@ -228,7 +282,14 @@ export function QuakeMap({ events, selectedId, onSelect, isLive, showShakemap }:
 				<Layer
 					id="events-selected-ring"
 					type="circle"
-					filter={['==', ['get', 'eventId'], selectedId ?? '']}
+					// base sempre presente (eventId, anche vuoto): composeFilters non torna mai undefined qui.
+					// Composto in render da selectedId + timeFilterMs → si aggiorna reattivamente a entrambi.
+					filter={
+						composeFilters(
+							['==', ['get', 'eventId'], selectedId ?? ''],
+							timeFilterMs ?? null
+						) as never
+					}
 					paint={{
 						'circle-radius': ['+', 6, ['*', ['get', 'magnitude'], 2.2]],
 						'circle-opacity': 0,
