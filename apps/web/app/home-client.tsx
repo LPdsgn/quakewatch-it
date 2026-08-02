@@ -223,9 +223,9 @@ export function HomeClient() {
 	const sidebarSlot = state.variant === 'detail-float' ? listContent : listSlot
 
 	return (
-		<div className="grid h-dvh w-screen grid-cols-1 grid-rows-1 bg-background text-foreground md:grid-cols-[360px_1fr] md:grid-rows-[1fr_72px]">
+		<div className="grid h-dvh w-screen grid-cols-1 grid-rows-1 bg-background text-foreground md:grid-cols-[360px_1fr] md:grid-rows-[1fr_fit-content(100%)]">
 			{/* Sidebar: sotto md sparisce, sostituita dal bottom sheet (mobile-sheet.tsx) */}
-			<div className="col-start-1 row-start-1 row-span-2 hidden flex-col gap-2 overflow-hidden bg-sidebar p-2 md:flex">
+			<div className="col-start-1 row-start-1 row-span-2 hidden flex-col gap-2 overflow-hidden bg-sidebar p-2 md:flex border-r border-border">
 				<Header isLive={state.window === '24h'} nowMs={nowMs} />
 				<Summary
 					events={visibleEvents}
@@ -249,14 +249,19 @@ export function HomeClient() {
 			    grid cell), pointer-events-none tranne il contenuto. Header qui perché sotto md
 			    non c'è sidebar: è l'unico modo di raggiungere il toggle tema (vincolo di piano). */}
 			<div className="pointer-events-none relative z-10 col-start-1 row-start-1 flex flex-col gap-2 p-2 pt-[env(safe-area-inset-top)] md:hidden">
-				<div className="pointer-events-auto flex flex-col gap-2 pt-2">
-					<Header isLive={state.window === '24h'} nowMs={nowMs} />
+				<div className="pointer-events-auto flex flex-col mt-2 bg-background/80 backdrop-blur-sm rounded-xl border border-border">
+					<Header
+						isLive={state.window === '24h'}
+						nowMs={nowMs}
+						className="border-0 bg-transparent"
+					/>
 					<Summary
 						events={visibleEvents}
 						isLoading={isLoading}
 						hasError={isError}
 						onSelectEvent={handleSelectEvent}
 						nowMs={nowMs}
+						className="mx-1"
 					/>
 					<Timeline
 						compact
@@ -322,7 +327,7 @@ export function HomeClient() {
 			</div>
 
 			{/* Timeline: solo desktop (Piano 4 T5). Variante mobile compact: Piano 4 T6. */}
-			<div className="hidden overflow-hidden border-t border-border md:col-start-2 md:row-start-2 md:flex">
+			<div className="hidden overflow-x-clip border-t border-border md:col-start-2 md:row-start-2 md:flex py-2.5">
 				<Timeline
 					events={events}
 					window={state.window}

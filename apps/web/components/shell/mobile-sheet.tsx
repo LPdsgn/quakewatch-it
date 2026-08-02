@@ -4,7 +4,7 @@ import type { Earthquake, TimeWindow } from '@quakewatch/core'
 import type { ReactNode } from 'react'
 
 import { AreaPreset } from '@/components/shell/area-preset'
-import { EventList } from '@/components/shell/event-list'
+// import { EventList } from '@/components/shell/event-list'
 import { SideFooter } from '@/components/shell/side-footer'
 import { Strongest } from '@/components/shell/strongest'
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
@@ -50,7 +50,7 @@ export function MobileSheet({
 	onSelectEvent,
 	onAreaWindowChange,
 }: MobileSheetProps) {
-	const mostRecent = events.toSorted((a, b) => b.time.localeCompare(a.time))[0] ?? null
+	// const mostRecent = events.toSorted((a, b) => b.time.localeCompare(a.time))[0] ?? null
 
 	// PEEK: filtri geo/tempo + ultimo evento — NIENTE riepilogo (i chip vivono già
 	// nell'overlay in alto: era duplicato, richiesta utente 2026-08-02).
@@ -62,12 +62,12 @@ export function MobileSheet({
 		body = (
 			<>
 				<AreaPreset area={area} window={window} onChange={onAreaWindowChange} />
-				<EventList
+				{/* <EventList
 					events={mostRecent ? [mostRecent] : []}
 					selectedId={null}
 					onSelect={onSelectEvent}
 					nowMs={nowMs}
-				/>
+				/> */}
 			</>
 		)
 	} else {

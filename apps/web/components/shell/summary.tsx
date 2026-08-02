@@ -2,6 +2,7 @@ import type { Earthquake } from '@quakewatch/core'
 
 import { Skeleton } from '@/components/ui/skeleton'
 import { relativeTime } from '@/lib/rel-time'
+import { cn } from '@/lib/utils'
 
 export interface SummaryProps {
 	events: Earthquake[]
@@ -12,9 +13,17 @@ export interface SummaryProps {
 	onSelectEvent?: (eventId: string) => void
 	/** Epoch ms dell'orologio condiviso (T8); null finché non montato. */
 	nowMs?: number | null
+	className?: string
 }
 
-export function Summary({ events, isLoading, hasError, onSelectEvent, nowMs }: SummaryProps) {
+export function Summary({
+	events,
+	isLoading,
+	hasError,
+	onSelectEvent,
+	nowMs,
+	className,
+}: SummaryProps) {
 	const count = events.length
 	const maxMag = count ? Math.max(...events.map((e) => e.magnitude)) : null
 	const avgDepth = count ? events.reduce((sum, e) => sum + e.depthKm, 0) / count : null
@@ -50,7 +59,12 @@ export function Summary({ events, isLoading, hasError, onSelectEvent, nowMs }: S
 	}
 
 	return (
-		<div className="flex flex-col gap-1.5 rounded-xl border border-border bg-card px-3 py-3">
+		<div
+			className={cn(
+				'flex flex-col gap-1.5 rounded-xl border border-border bg-card px-3 py-3',
+				className
+			)}
+		>
 			{hero}
 			<div className="grid grid-cols-3 gap-2">
 				<Stat label="eventi" value={isLoading ? null : countLabel} />
@@ -65,7 +79,7 @@ function Stat({ label, value }: { label: string; value: string | null }) {
 	return (
 		<div className="flex flex-col gap-0.5">
 			{value === null ? (
-				<Skeleton className="h-[19px] w-10" />
+				<Skeleton className="h-4.75 w-10" />
 			) : (
 				<span className="font-mono text-[19px] leading-none" data-numeric>
 					{value}

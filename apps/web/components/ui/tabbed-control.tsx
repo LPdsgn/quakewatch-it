@@ -33,7 +33,11 @@ export function TabbedControl<T extends string>({
 	'aria-label': ariaLabel,
 }: TabbedControlProps<T>) {
 	return (
-		<div role="group" aria-label={ariaLabel} className={cn(tabsListVariants(), 'h-8', className)}>
+		<div
+			role="group"
+			aria-label={ariaLabel}
+			className={cn(tabsListVariants(), 'h-8 rounded-md', className)}
+		>
 			{options.map((option) => (
 				<button
 					key={option.value}
@@ -43,7 +47,7 @@ export function TabbedControl<T extends string>({
 					onClick={() => onChange(option.value)}
 					className={cn(
 						// Sottoinsieme delle classi di TabsTrigger (tabs.tsx) che non dipende dal Root.
-						'inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center rounded-md border border-transparent px-1.5 py-0.5 font-medium whitespace-nowrap text-foreground/60 transition-all hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:text-muted-foreground dark:hover:text-foreground',
+						'inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center rounded-sm border border-transparent px-1.5 py-0.5 font-medium whitespace-nowrap text-foreground/60 transition-all hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:text-muted-foreground dark:hover:text-foreground',
 						'data-active:bg-background data-active:text-foreground data-active:shadow-sm dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground',
 						triggerClassName
 					)}

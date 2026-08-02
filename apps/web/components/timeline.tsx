@@ -37,6 +37,7 @@ export interface TimelineProps {
 	onScrub: (tMs: number | null) => void
 	/** Variante mobile (T6): altezza ridotta, niente tooltip, readout solo in storica/drag. */
 	compact?: boolean
+	className?: string
 }
 
 // Altezza SVG dell'istogramma: allineata allo Skeleton dello stato loading (h-8 = 32px).
@@ -75,6 +76,7 @@ export function Timeline({
 	onCommit,
 	onScrub,
 	compact = false,
+	className,
 }: TimelineProps): ReactNode {
 	// resolvedTheme è undefined in SSR: default 'theme-dark' finché non montato (map-legend.tsx:92-96).
 	const { resolvedTheme } = useTheme()
@@ -84,10 +86,7 @@ export function Timeline({
 	const colors = MAGNITUDE_COLORS[themeName]
 	const rowHeight = compact ? ROW_HEIGHT_COMPACT : ROW_HEIGHT
 	// Compact (T6, mobile): card coerente coi chip dell'overlay (come Summary) invece del filo
-	// border-t che separa la timeline dalla mappa nella barra desktop.
-	const frameClass = compact
-		? 'rounded-xl border border-border bg-card px-3'
-		: 'border-t border-border px-4'
+	const frameClass = compact ? 'rounded-xl px-3' : 'px-4'
 
 	const [reducedMotion, setReducedMotion] = useState(false)
 	useEffect(() => {
@@ -211,7 +210,7 @@ export function Timeline({
 
 	if (isLoading || nowMs === null) {
 		return (
-			<div className={cn('flex h-10 w-full items-center', frameClass)}>
+			<div className={cn('flex h-10 md:h-full w-full items-center', frameClass, className)}>
 				<Skeleton className="h-8 w-full" />
 			</div>
 		)
@@ -221,8 +220,9 @@ export function Timeline({
 		return (
 			<div
 				className={cn(
-					'dot-grid flex h-10 w-full items-center justify-center text-center',
-					frameClass
+					'dot-grid flex h-10 md:h-full w-full items-center justify-center text-center',
+					frameClass,
+					className
 				)}
 			>
 				<span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
@@ -267,7 +267,7 @@ export function Timeline({
 	const showReadout = !compact || !isLive
 
 	return (
-		<div className={cn('flex h-10 w-full items-center gap-3', frameClass)}>
+		<div className={cn('flex h-10 md:h-full w-full items-center gap-3', frameClass, className)}>
 			{showReadout && (
 				<span className="font-mono text-[11px] text-muted-foreground" data-numeric>
 					{readout}
