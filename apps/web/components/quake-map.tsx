@@ -164,7 +164,10 @@ export function QuakeMap({ events, selectedId, onSelect, isLive }: QuakeMapProps
 			onClick={(e) => {
 				const eventId = e.features?.[0]?.properties?.eventId
 				if (typeof eventId === 'string') {
-					suppressFlyToRef.current = eventId
+					// Solo se cambia selezione: ri-click sul marker già selezionato non deve marcare
+					// il ref (selectedId non cambierebbe, l'effect non lo consumerebbe mai, e una
+					// futura selezione esterna dello stesso evento troverebbe un ref stantio).
+					if (eventId !== selectedId) suppressFlyToRef.current = eventId
 					onSelect(eventId)
 				}
 			}}
