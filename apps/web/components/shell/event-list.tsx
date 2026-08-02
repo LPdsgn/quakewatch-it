@@ -47,7 +47,7 @@ export function EventList({ events, selectedId, onSelect, nowMs, restoreFocusId 
 							})}
 							onClick={() => onSelect(event.eventId)}
 							className={cn(
-								'flex items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-muted',
+								'flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-muted',
 								isSelected && 'bg-muted'
 							)}
 						>
@@ -63,14 +63,11 @@ export function EventList({ events, selectedId, onSelect, nowMs, restoreFocusId 
 							<span className="min-w-0 flex-1 truncate text-[13px] text-foreground">
 								{event.locationName}
 							</span>
-							<span
-								className="shrink-0 font-mono text-[11px] text-muted-foreground"
-								data-numeric
-							>
+							<span className="shrink-0 text-[10px] text-muted-foreground" data-numeric>
 								{nowMs !== null ? relativeTime(event.time, nowMs) : ''}
 							</span>
 							<span
-								className="w-12 shrink-0 text-right font-mono text-[11px] text-muted-foreground"
+								className="w-12 shrink-0 text-right font-mono text-[10px] text-muted-foreground/70"
 								data-numeric
 							>
 								{event.depthKm.toFixed(1)} km

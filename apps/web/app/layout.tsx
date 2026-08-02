@@ -25,12 +25,19 @@ export const metadata: Metadata = {
 	title: { default: 'QuakeWatch', template: '%s · QuakeWatch' },
 	description:
 		"Monitoraggio sismico dell'Italia su dati INGV — Osservatorio Nazionale Terremoti. Dati preliminari soggetti a revisione.",
+	// PWA (manifest.ts): standalone su iOS con status bar integrata nel tema.
+	appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'QuakeWatch' },
 }
 
 export const viewport: Viewport = {
 	width: 'device-width',
 	initialScale: 1,
 	viewportFit: 'cover',
+	// Colore del chrome del browser per tema: valori di --background (theme.css).
+	themeColor: [
+		{ media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
+		{ media: '(prefers-color-scheme: light)', color: '#f5f5f5' },
+	],
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

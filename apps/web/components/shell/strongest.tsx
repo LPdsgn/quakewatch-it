@@ -86,7 +86,7 @@ export function Strongest({
 										{event.locationName}
 									</span>
 									<span
-										className="shrink-0 font-mono text-[10px] text-muted-foreground"
+										className="shrink-0 text-[10px] text-muted-foreground"
 										data-numeric
 									>
 										{nowMs !== null ? relativeTime(event.time, nowMs) : ''}
