@@ -21,6 +21,20 @@ Ricognizione (2026-08-01) dei cataloghi PA italiani e dell'organizzazione GitHub
 
 Conclusione operativa: la via FDSN diretta (già scelta) resta l'unica sensata; il valore aggiunto trovato è l'MCP server per lo sviluppo e il servizio `shakedata` come possibile estensione futura.
 
+## ShakeMap: layer di scuotimento per la nostra mappa (verificato empiricamente 2026-08-02)
+
+Esame di shakemap4-web + probe live del portale ufficiale `https://shakemap.ingv.it` (che È shakemap4-web deployato):
+
+- **I prodotti per evento sono file statici pubblici**: `https://shakemap.ingv.it/data/{eventId}/current/products/…` con **lo stesso `eventId` FDSN** (verificato su 46725592, Campi Flegrei M4.7 del 2026-07-31)
+- I file utili per un layer mappa:
+  - `cont_mi.json` — **GeoJSON di contorni MMI** (MultiLineString), features auto-descrittive `{value, units, color, weight}` → in MapLibre basta un source geojson + line layer con `line-color: ['get','color']` (~10 KB per evento)
+  - `intensity_overlay.png` (~27 KB) — riempimento raster; bounds in `info.json` → `output.map_information.{min,max}` (lon/lat) per un image source MapLibre
+  - `cont_pga/pgv/psa*.json`, `stationlist`, legenda MMI in `mmi_legend.png`; scala colori in `js/colors.js` (USGS + variante INGV)
+- **Niente CORS** sui prodotti → serve il nostro proxy (`/api/events/{id}/shakemap`), coerente con l'architettura (cache CDN)
+- **Non tutti gli eventi hanno prodotti** (solo quelli processati, tipicamente M≥~3, più l'archivio storico macrosismico): si sonda per evento, 404 → niente layer
+- `ingvws/shakedata` NON è la fonte dei prodotti: accetta solo `format=event|event_dat` e restituisce i dati di *input* per ShakeMap (ampiezze stazioni), non i render
+- Cautele: endpoint dati del portale, non API documentata → degradare con grazia; prodotti soggetti a revisione (`/current/`); attribuzione ShakeMap INGV + condizioni d'uso da verificare pre-release (stesso blocker della licenza dati)
+
 ## Come consumare questi repo (niente submodule)
 
 Modalità corrette:
