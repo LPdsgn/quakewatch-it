@@ -18,7 +18,10 @@ import { Switch } from '@/components/ui/switch'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 
+import { Separator } from '../ui/separator'
+
 export interface EventDetailProps {
+	className?: string
 	eventId: string
 	onBack: () => void
 	showShakemap: boolean
@@ -47,7 +50,13 @@ function formatCoords(latitude: number, longitude: number): string {
 }
 
 /** Pannello di dettaglio evento: scorre sopra la lista nella stessa colonna sidebar (T11). */
-export function EventDetail({ eventId, onBack, showShakemap, onToggleShakemap }: EventDetailProps) {
+export function EventDetail({
+	eventId,
+	onBack,
+	showShakemap,
+	onToggleShakemap,
+	className,
+}: EventDetailProps) {
 	const { data, isLoading, isError } = useEventDetailQuery(eventId)
 	// enabled=true al mount del dettaglio (non legato al toggle): serve a sapere SUBITO se il
 	// prodotto esiste, per mostrare toggle o riga muted. Stessa queryKey di QuakeMap → cache condivisa.
@@ -80,10 +89,15 @@ export function EventDetail({ eventId, onBack, showShakemap, onToggleShakemap }:
 	}
 
 	return (
-		<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card relative">
+		<div
+			className={cn(
+				'flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card relative',
+				className
+			)}
+		>
 			<EventBackButton onBack={onBack} />
-			<ScrollArea className="min-h-0 flex-1">
-				<div className="flex flex-col gap-4 p-3">{body}</div>
+			<ScrollArea className="min-h-0" innerClassName="space-y-4 p-3">
+				{body}
 			</ScrollArea>
 		</div>
 	)
@@ -187,16 +201,22 @@ function DetailBody({
 				<span>{preferredOrigin.depthKm.toFixed(1)} km di profondità</span>
 			</div>
 
-			{hasRevisions && <RevisionHistory detail={detail} />}
+			<Separator />
 
-			{!shakemapLoading && (
+			{!shakemapLoading ? (
 				<ShakemapSection
 					shakemapError={shakemapError}
 					shakemapAvailable={shakemapAvailable}
 					showShakemap={showShakemap}
 					onToggleShakemap={onToggleShakemap}
 				/>
+			) : (
+				<Skeleton className="h-9.25 w-full" />
 			)}
+
+			<Separator />
+
+			{hasRevisions && <RevisionHistory detail={detail} />}
 
 			<a
 				href={`${INGV_EVENT_URL}${eventId}`}
@@ -228,16 +248,14 @@ function ShakemapSection({
 }) {
 	if (shakemapError) {
 		return (
-			<p className="border-t border-border pt-3 text-xs text-muted-foreground">
+			<p className="text-xs text-muted-foreground">
 				Impossibile verificare lo ShakeMap di questo evento. Riprova più tardi.
 			</p>
 		)
 	}
 	if (!shakemapAvailable) {
 		return (
-			<p className="border-t border-border pt-3 text-xs text-muted-foreground">
-				ShakeMap non disponibile per questo evento
-			</p>
+			<p className="text-xs text-muted-foreground">ShakeMap non disponibile per questo evento</p>
 		)
 	}
 	return <ShakemapToggle showShakemap={showShakemap} onToggleShakemap={onToggleShakemap} />
@@ -260,21 +278,19 @@ function ShakemapToggle({
 	const id = useId()
 
 	return (
-		<div className="border-t border-border pt-3">
-			<Field orientation="horizontal">
-				<FieldContent>
-					<FieldLabel htmlFor={id}>Mappa d&apos;impatto</FieldLabel>
-					<FieldDescription className="text-xs font-normal">
-						Mostra le aree di scuotimento stimate.
-					</FieldDescription>
-				</FieldContent>
-				<Switch
-					id={id}
-					checked={showShakemap}
-					onCheckedChange={(next) => onToggleShakemap(next)}
-				/>
-			</Field>
-		</div>
+		<Field orientation="horizontal">
+			<FieldContent>
+				<FieldLabel htmlFor={id}>Mappa d&apos;impatto</FieldLabel>
+				<FieldDescription className="text-xs font-normal">
+					Mostra le aree di scuotimento stimate.
+				</FieldDescription>
+			</FieldContent>
+			<Switch
+				id={id}
+				checked={showShakemap}
+				onCheckedChange={(next) => onToggleShakemap(next)}
+			/>
+		</Field>
 	)
 }
 
@@ -282,7 +298,7 @@ function RevisionHistory({ detail }: { detail: EventDetailData }) {
 	const { origins, magnitudes, preferredOrigin, preferredMagnitude } = detail
 
 	return (
-		<div className="flex flex-col gap-2 border-t border-border pt-3">
+		<div className="flex flex-col gap-2">
 			<span className="text-[10px] uppercase tracking-wide text-muted-foreground">
 				Storico revisioni
 			</span>
