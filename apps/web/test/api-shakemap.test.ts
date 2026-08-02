@@ -62,6 +62,18 @@ describe('GET /api/events/[eventId]/shakemap', () => {
 		vi.stubGlobal('fetch', vi.fn().mockRejectedValue(timeoutError))
 		const res = await call('46725592')
 		expect(res.status).toBe(502)
+		expect(res.headers.get('Cache-Control')).toBe('no-store')
+	})
+
+	it('502 su JSON valido ma struttura non ShakeMap (guard fallisce)', async () => {
+		const notContours = JSON.stringify({
+			type: 'FeatureCollection',
+			features: [{ properties: {} }],
+		})
+		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(notContours, { status: 200 })))
+		const res = await call('46725592')
+		expect(res.status).toBe(502)
+		expect(res.headers.get('Cache-Control')).toBe('no-store')
 	})
 
 	it('502 su JSON non valido', async () => {

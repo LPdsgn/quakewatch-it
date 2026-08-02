@@ -6,9 +6,10 @@ export interface ShakemapContours {
 		geometry: { type: 'MultiLineString'; coordinates: number[][][] }
 		properties: {
 			value: number
-			units: string
 			color: string
-			weight: number
+			/** Non verificati da isShakemapContours (validazione minima): mai assumerli presenti. */
+			units?: string
+			weight?: number
 		}
 	}[]
 }
