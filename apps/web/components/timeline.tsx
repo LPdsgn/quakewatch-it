@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toThemeName } from '@/lib/theme'
 import { binEvents, clampT, type TimelineBin } from '@/lib/timeline'
+import { cn } from '@/lib/utils'
 
 export interface TimelineProps {
 	/** Eventi NON filtrati della finestra. */
@@ -30,7 +31,9 @@ export interface TimelineProps {
 }
 
 // Altezza SVG dell'istogramma: allineata allo Skeleton dello stato loading (h-8 = 32px).
+// Variante compact (T6, mobile): istogramma ridotto a 24px, riga esterna resta ~40px (h-10).
 const ROW_HEIGHT = 32
+const ROW_HEIGHT_COMPACT = 24
 
 const READOUT_FORMAT = new Intl.DateTimeFormat('it-IT', {
 	timeZone: 'Europe/Rome',
@@ -43,9 +46,9 @@ function formatReadout(ms: number): string {
 }
 
 /** sqrt(count/max) satura la coda: un bin con 10x gli eventi non deve essere 10x più alto. */
-function heightOf(bin: TimelineBin, maxCount: number): number {
+function heightOf(bin: TimelineBin, maxCount: number, rowHeight: number): number {
 	if (bin.count === 0) return 0
-	return Math.max(2, Math.sqrt(bin.count / maxCount) * (ROW_HEIGHT - 2))
+	return Math.max(2, Math.sqrt(bin.count / maxCount) * (rowHeight - 2))
 }
 
 /**
@@ -70,6 +73,12 @@ export function Timeline({
 	useEffect(() => setMounted(true), [])
 	const themeName: ThemeName = mounted ? toThemeName(resolvedTheme) : 'theme-dark'
 	const colors = MAGNITUDE_COLORS[themeName]
+	const rowHeight = compact ? ROW_HEIGHT_COMPACT : ROW_HEIGHT
+	// Compact (T6, mobile): card coerente coi chip dell'overlay (come Summary) invece del filo
+	// border-t che separa la timeline dalla mappa nella barra desktop.
+	const frameClass = compact
+		? 'rounded-xl border border-border bg-card px-3'
+		: 'border-t border-border px-4'
 
 	const [reducedMotion, setReducedMotion] = useState(false)
 	useEffect(() => {
@@ -145,18 +154,18 @@ export function Timeline({
 				const bin = bins[i]
 				const from = oldHeights[i]
 				if (!bin || from === undefined) return
-				const to = heightOf(bin, maxCount)
+				const to = heightOf(bin, maxCount, rowHeight)
 				if (from === to) return
 				rect.setAttribute('height', String(from))
-				rect.setAttribute('y', String(ROW_HEIGHT - from))
+				rect.setAttribute('y', String(rowHeight - from))
 				scopeRef.current?.add(() => {
-					animate(rect, { height: to, y: ROW_HEIGHT - to, duration: 300, ease: 'outQuad' })
+					animate(rect, { height: to, y: rowHeight - to, duration: 300, ease: 'outQuad' })
 				})
 			})
 		}
 		prevWindowRef.current = timeWindow
-		prevHeightsRef.current = bins.map((bin) => heightOf(bin, maxCount))
-	}, [bins, timeWindow, reducedMotion, maxCount])
+		prevHeightsRef.current = bins.map((bin) => heightOf(bin, maxCount, rowHeight))
+	}, [bins, timeWindow, reducedMotion, maxCount, rowHeight])
 
 	// Snap-back del cursore al bordo destro quando si torna live: cattura la x precedente
 	// (ultimo render prima della transizione) e la anima verso il bordo. Nessun effetto durante
@@ -181,7 +190,7 @@ export function Timeline({
 
 	if (isLoading || nowMs === null) {
 		return (
-			<div className="flex h-10 items-center border-t border-border px-4">
+			<div className={cn('flex h-10 items-center', frameClass)}>
 				<Skeleton className="h-8 w-full" />
 			</div>
 		)
@@ -189,7 +198,9 @@ export function Timeline({
 
 	if (hasError || events.length === 0) {
 		return (
-			<div className="dot-grid flex h-10 items-center justify-center border-t border-border px-4 text-center">
+			<div
+				className={cn('dot-grid flex h-10 items-center justify-center text-center', frameClass)}
+			>
 				<span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
 					{hasError ? 'Dati non disponibili al momento.' : 'Nessun evento nella finestra'}
 				</span>
@@ -227,17 +238,23 @@ export function Timeline({
 		: (hoverIndex ?? (sliderFocused ? indexOfBin(cursorMs) : null))
 	const tooltipBin = tooltipIndex !== null ? bins[tooltipIndex] : undefined
 
-	return (
-		<div className="flex h-10 items-center gap-3 border-t border-border px-4">
-			<span className="font-mono text-[11px] text-muted-foreground" data-numeric>
-				{readout}
-			</span>
+	// Compact: readout visibile solo in storica/drag — in live basta il dot LIVE compatto
+	// a destra, niente testo duplicato a sinistra.
+	const showReadout = !compact || !isLive
 
-			<div ref={containerRef} className="relative h-8 flex-1">
+	return (
+		<div className={cn('flex h-10 items-center gap-3', frameClass)}>
+			{showReadout && (
+				<span className="font-mono text-[11px] text-muted-foreground" data-numeric>
+					{readout}
+				</span>
+			)}
+
+			<div ref={containerRef} className={cn('relative flex-1', compact ? 'h-6' : 'h-8')}>
 				<svg
 					width="100%"
-					height={ROW_HEIGHT}
-					viewBox={`0 0 ${width} ${ROW_HEIGHT}`}
+					height={rowHeight}
+					viewBox={`0 0 ${width} ${rowHeight}`}
 					preserveAspectRatio="none"
 					className="block touch-none cursor-ew-resize select-none"
 					onPointerDown={(e) => {
@@ -264,7 +281,7 @@ export function Timeline({
 					{bins.map((bin, i) => {
 						const x1 = msToX(bin.startMs)
 						const x2 = msToX(bin.endMs)
-						const barHeight = heightOf(bin, maxCount)
+						const barHeight = heightOf(bin, maxCount, rowHeight)
 						const beyondCursor = bin.startMs > cursorMs
 						return (
 							<g
@@ -284,7 +301,7 @@ export function Timeline({
 										x={x1}
 										y={0}
 										width={Math.max(0, x2 - x1)}
-										height={ROW_HEIGHT}
+										height={rowHeight}
 										fill="transparent"
 										style={{ pointerEvents: 'all' }}
 									/>
@@ -295,7 +312,7 @@ export function Timeline({
 											rectRefs.current[i] = el
 										}}
 										x={x1 + 0.5}
-										y={ROW_HEIGHT - barHeight}
+										y={rowHeight - barHeight}
 										width={Math.max(0, x2 - x1 - 1)}
 										height={barHeight}
 										fill={colors[bin.maxClassId]}
@@ -310,7 +327,7 @@ export function Timeline({
 						x1={msToX(cursorMs)}
 						x2={msToX(cursorMs)}
 						y1={0}
-						y2={ROW_HEIGHT}
+						y2={rowHeight}
 						strokeWidth={2}
 						className="stroke-primary outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
 						role="slider"

@@ -258,6 +258,17 @@ export function HomeClient() {
 						onSelectEvent={handleSelectEvent}
 						nowMs={nowMs}
 					/>
+					<Timeline
+						compact
+						events={events}
+						window={state.window}
+						tMs={tMs}
+						nowMs={nowMs}
+						isLoading={isLoading}
+						hasError={isError}
+						onCommit={handleTimeCommit}
+						onScrub={handleScrub}
+					/>
 				</div>
 			</div>
 
