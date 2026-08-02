@@ -41,6 +41,16 @@ describe('romeDayStartMs', () => {
 		const jan = Date.parse('2026-01-15T12:00:00Z')
 		expect(romeDayStartMs(jan)).toBe(Date.parse('2026-01-14T23:00:00Z'))
 	})
+	it('mezzanotte Roma nel giorno del cambio ora (primavera 2026)', () => {
+		expect(romeDayStartMs(Date.parse('2026-03-29T12:00:00Z'))).toBe(
+			Date.parse('2026-03-28T23:00:00Z')
+		)
+	})
+	it('mezzanotte Roma nel giorno del cambio ora (autunno 2026)', () => {
+		expect(romeDayStartMs(Date.parse('2026-10-25T12:00:00Z'))).toBe(
+			Date.parse('2026-10-24T22:00:00Z')
+		)
+	})
 })
 
 describe('binEvents', () => {
@@ -73,6 +83,14 @@ describe('binEvents', () => {
 	it('evento fuori finestra ignorato, bin vuoto ha maxClassId null', () => {
 		const bins = binEvents([ev('2026-07-01T00:00:00Z', 5)], '24h', NOW)
 		expect(bins.every((b) => b.count === 0 && b.maxClassId === null)).toBe(true)
+	})
+	it('90d: bin giornalieri restano ancorati alla mezzanotte Roma attraverso il cambio ora', () => {
+		const now = Date.parse('2026-04-15T12:00:00Z') // finestra 90g copre il 29 marzo
+		const bins = binEvents([], '90d', now)
+		for (const b of bins) expect(b.startMs).toBe(romeDayStartMs(b.startMs))
+		// il giorno della transizione dura 23h
+		const short = bins.find((b) => b.startMs === Date.parse('2026-03-28T23:00:00Z'))!
+		expect(short.endMs - short.startMs).toBe(23 * 3_600_000)
 	})
 })
 
