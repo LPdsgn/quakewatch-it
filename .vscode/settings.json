@@ -1,0 +1,6 @@
+{
+	"editor.defaultFormatter": "oxc.oxc-vscode",
+	"editor.insertSpaces": false,
+	"editor.tabSize": 3,
+	"editor.detectIndentation": true
+}

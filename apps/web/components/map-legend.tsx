@@ -137,7 +137,7 @@ export function MapLegend({ showMmi }: MapLegendProps) {
 						variant="outline"
 						aria-label="Apri legenda mappa"
 						aria-expanded={open}
-						className="pointer-events-auto min-h-11 rounded-full bg-card/85 px-4 text-[11px] backdrop-blur-sm"
+						className="pointer-events-auto  rounded-full bg-card/85 px-4 text-[11px] backdrop-blur-sm"
 						onClick={() => setOpen(true)}
 					>
 						Legenda
