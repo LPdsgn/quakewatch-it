@@ -1,7 +1,14 @@
 'use client'
 
 import type { Earthquake } from '@quakewatch/core'
-import { RED, SEMANTIC_TOKENS, buildMapStyle, type ThemeName } from '@quakewatch/tokens'
+import {
+	MAGNITUDE_COLORS,
+	RED,
+	SEMANTIC_TOKENS,
+	buildMapStyle,
+	magnitudeClassOf,
+	type ThemeName,
+} from '@quakewatch/tokens'
 import type { StyleSpecification } from 'maplibre-gl'
 import { useTheme } from 'next-themes'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -44,7 +51,8 @@ export function QuakeMap({ events, selectedId, onSelect, isLive }: QuakeMapProps
 		() => buildMapStyle(themeName) as unknown as StyleSpecification,
 		[themeName]
 	)
-	const neutralColor = SEMANTIC_TOKENS[themeName]['muted-foreground'] as string
+	const foregroundColor = SEMANTIC_TOKENS[themeName].foreground as string
+	const magnitudeColors = MAGNITUDE_COLORS[themeName]
 
 	const mapRef = useRef<MapRef | null>(null)
 	const [mapLoaded, setMapLoaded] = useState(false)
@@ -79,10 +87,6 @@ export function QuakeMap({ events, selectedId, onSelect, isLive }: QuakeMapProps
 				type: 'FeatureCollection' as const,
 				features: events.map((e) => {
 					const isSelected = e.eventId === selectedId
-					// rosso accento: evento selezionato, o il più recente quando nulla è selezionato
-					// (spec §2 "recenza in accento rosso"; sarà superato dalla codifica bivariata del Piano 3)
-					const isAccent =
-						isSelected || (selectedId === null && e.eventId === mostRecent?.eventId)
 					const ageHours = (now - new Date(e.time).getTime()) / 3_600_000
 					const opacity = isSelected
 						? 1
@@ -98,7 +102,7 @@ export function QuakeMap({ events, selectedId, onSelect, isLive }: QuakeMapProps
 						properties: {
 							eventId: e.eventId,
 							magnitude: e.magnitude,
-							color: isAccent ? RED[500] : neutralColor,
+							color: magnitudeColors[magnitudeClassOf(e.magnitude).id],
 							opacity,
 							isPulse: e.eventId === pulse,
 						},
@@ -106,7 +110,7 @@ export function QuakeMap({ events, selectedId, onSelect, isLive }: QuakeMapProps
 				}),
 			},
 		}
-	}, [events, selectedId, neutralColor, isLive])
+	}, [events, selectedId, magnitudeColors, isLive])
 
 	// Selezione ESTERNA (dalla lista) → flyTo. Il click diretto su un marker è già a vista:
 	// suppressFlyToRef marca l'eventId appena selezionato da un click sulla mappa, l'effect lo
@@ -198,6 +202,17 @@ export function QuakeMap({ events, selectedId, onSelect, isLive }: QuakeMapProps
 						'circle-radius': ['+', 3, ['*', ['get', 'magnitude'], 2.2]],
 						'circle-color': ['get', 'color'],
 						'circle-opacity': ['get', 'opacity'],
+					}}
+				/>
+				<Layer
+					id="events-selected-ring"
+					type="circle"
+					filter={['==', ['get', 'eventId'], selectedId ?? '']}
+					paint={{
+						'circle-radius': ['+', 6, ['*', ['get', 'magnitude'], 2.2]],
+						'circle-opacity': 0,
+						'circle-stroke-width': 2,
+						'circle-stroke-color': foregroundColor,
 					}}
 				/>
 			</Source>
