@@ -4,7 +4,16 @@ import type { Earthquake, TimeWindow } from '@quakewatch/core'
 import { MAGNITUDE_CLASSES, MAGNITUDE_COLORS, type ThemeName } from '@quakewatch/tokens'
 import { animate, createScope } from 'animejs'
 import { useTheme } from 'next-themes'
-import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import {
+	useCallback,
+	useEffect,
+	useId,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+	type ReactNode,
+} from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -89,17 +98,35 @@ export function Timeline({
 		return () => mq.removeEventListener('change', onChange)
 	}, [])
 
-	const containerRef = useRef<HTMLDivElement>(null)
+	// Scope anime.js: un solo root per il componente, revert() alla dismount pulisce
+	// eventuali tween in corso (stile inline residuo). Solo due animazioni gestite qui:
+	// snap-back del cursore al ritorno live e transizione altezze bin al cambio finestra.
+	const rectRefs = useRef<(SVGRectElement | null)[]>([])
+	const cursorLineRef = useRef<SVGLineElement>(null)
+	const scopeRef = useRef<ReturnType<typeof createScope> | null>(null)
+
+	const roRef = useRef<ResizeObserver | null>(null)
 	const [width, setWidth] = useState(0)
-	useEffect(() => {
-		const el = containerRef.current
-		if (!el) return
+	// Callback ref: il contenitore appare/scompare coi rami (skeleton→istogramma) — l'observer
+	// deve seguire il nodo, non il mount del componente (bug: un effect [] al mount vedeva un
+	// ref ancora null finché il ramo skeleton era quello renderizzato, e width restava 0 per
+	// sempre). Lo scope anime.js segue lo stesso ciclo di vita del nodo, quindi si crea qui.
+	const observeContainer = useCallback((el: HTMLDivElement | null) => {
+		roRef.current?.disconnect()
+		roRef.current = null
+		if (el === null) {
+			scopeRef.current?.revert()
+			scopeRef.current = null
+			return
+		}
+		setWidth(el.getBoundingClientRect().width)
 		const ro = new ResizeObserver((entries) => {
 			const entry = entries[0]
 			if (entry) setWidth(entry.contentRect.width)
 		})
 		ro.observe(el)
-		return () => ro.disconnect()
+		roRef.current = ro
+		scopeRef.current = createScope({ root: el })
 	}, [])
 
 	// nowMs "congelato" del clock condiviso: ricalcola i bin solo quando cambiano eventi/finestra/tick.
@@ -130,16 +157,10 @@ export function Timeline({
 	const isLive = dragMs === null && tMs === null
 	const cursorMs = dragMs ?? tMs ?? domainEnd
 
-	// Scope anime.js: un solo root per il componente, revert() alla dismount pulisce
-	// eventuali tween in corso (stile inline residuo). Solo due animazioni gestite qui:
-	// snap-back del cursore al ritorno live e transizione altezze bin al cambio finestra.
-	const rectRefs = useRef<(SVGRectElement | null)[]>([])
-	const cursorLineRef = useRef<SVGLineElement>(null)
-	const scopeRef = useRef<ReturnType<typeof createScope> | null>(null)
-	useEffect(() => {
-		scopeRef.current = createScope({ root: containerRef.current ?? undefined })
-		return () => scopeRef.current?.revert()
-	}, [])
+	// Bilancio nan/degenerazione: senza una larghezza misurata o con un dominio collassato
+	// (nowMs non ancora avanzato oltre il primo bin) msToX/xToMs produrrebbero attributi SVG
+	// non validi — si salta la resa di bin/cursore invece di dipingere un frame spazzatura.
+	const canDraw = width > 0 && domainEnd > domainStart && maxCount > 0
 
 	// Transizione altezze rect al cambio finestra: cattura le altezze precedenti (stesso indice
 	// di posizione, non stesso bin semantico — il cambio finestra cambia comunque la scala) e le
@@ -190,7 +211,7 @@ export function Timeline({
 
 	if (isLoading || nowMs === null) {
 		return (
-			<div className={cn('flex h-10 items-center', frameClass)}>
+			<div className={cn('flex h-10 w-full items-center', frameClass)}>
 				<Skeleton className="h-8 w-full" />
 			</div>
 		)
@@ -199,7 +220,10 @@ export function Timeline({
 	if (hasError || events.length === 0) {
 		return (
 			<div
-				className={cn('dot-grid flex h-10 items-center justify-center text-center', frameClass)}
+				className={cn(
+					'dot-grid flex h-10 w-full items-center justify-center text-center',
+					frameClass
+				)}
 			>
 				<span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
 					{hasError ? 'Dati non disponibili al momento.' : 'Nessun evento nella finestra'}
@@ -243,14 +267,14 @@ export function Timeline({
 	const showReadout = !compact || !isLive
 
 	return (
-		<div className={cn('flex h-10 items-center gap-3', frameClass)}>
+		<div className={cn('flex h-10 w-full items-center gap-3', frameClass)}>
 			{showReadout && (
 				<span className="font-mono text-[11px] text-muted-foreground" data-numeric>
 					{readout}
 				</span>
 			)}
 
-			<div ref={containerRef} className={cn('relative flex-1', compact ? 'h-6' : 'h-8')}>
+			<div ref={observeContainer} className={cn('relative flex-1', compact ? 'h-6' : 'h-8')}>
 				<svg
 					width="100%"
 					height={rowHeight}
@@ -278,104 +302,107 @@ export function Timeline({
 					}}
 					onPointerCancel={() => setDragMs(null)}
 				>
-					{bins.map((bin, i) => {
-						const x1 = msToX(bin.startMs)
-						const x2 = msToX(bin.endMs)
-						const barHeight = heightOf(bin, maxCount, rowHeight)
-						const beyondCursor = bin.startMs > cursorMs
-						return (
-							<g
-								key={bin.startMs}
-								{...(!compact
-									? {
-											onPointerEnter: () => setHoverIndex(i),
-											onPointerLeave: () =>
-												setHoverIndex((cur) => (cur === i ? null : cur)),
-										}
-									: {})}
-							>
-								{/* Hit-layer invisibile a tutta altezza: target hover più comodo del
-								    mark sottile, copre anche lo spazio sopra un bin basso/vuoto. */}
-								{!compact && (
-									<rect
-										x={x1}
-										y={0}
-										width={Math.max(0, x2 - x1)}
-										height={rowHeight}
-										fill="transparent"
-										style={{ pointerEvents: 'all' }}
-									/>
-								)}
-								{bin.count > 0 && bin.maxClassId && (
-									<rect
-										ref={(el) => {
-											rectRefs.current[i] = el
-										}}
-										x={x1 + 0.5}
-										y={rowHeight - barHeight}
-										width={Math.max(0, x2 - x1 - 1)}
-										height={barHeight}
-										fill={colors[bin.maxClassId]}
-										opacity={beyondCursor ? 0.25 : 1}
-									/>
-								)}
-							</g>
-						)
-					})}
-					<line
-						ref={cursorLineRef}
-						x1={msToX(cursorMs)}
-						x2={msToX(cursorMs)}
-						y1={0}
-						y2={rowHeight}
-						strokeWidth={2}
-						className="stroke-primary outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-						role="slider"
-						tabIndex={0}
-						aria-labelledby={readoutLabelId}
-						aria-valuemin={Math.floor(domainStart / 1000)}
-						aria-valuemax={Math.floor(domainEnd / 1000)}
-						aria-valuenow={Math.floor(cursorMs / 1000)}
-						aria-valuetext={readout}
-						onFocus={() => setSliderFocused(true)}
-						onBlur={() => setSliderFocused(false)}
-						onKeyDown={(e) => {
-							const currentIndex = indexOfBin(cursorMs)
-							switch (e.key) {
-								case 'ArrowLeft':
-									e.preventDefault()
-									commitBinIndex(currentIndex - 1)
-									return
-								case 'ArrowRight':
-									e.preventDefault()
-									if (currentIndex >= bins.length - 1) onCommit(null)
-									else commitBinIndex(currentIndex + 1)
-									return
-								case 'PageUp':
-									e.preventDefault()
-									commitBinIndex(currentIndex - 10)
-									return
-								case 'PageDown':
-									e.preventDefault()
-									if (currentIndex + 10 >= bins.length - 1) onCommit(null)
-									else commitBinIndex(currentIndex + 10)
-									return
-								case 'Home':
-									e.preventDefault()
-									commitBinIndex(0)
-									return
-								case 'End':
-									e.preventDefault()
-									onCommit(null)
-									return
-								default:
-									return
-							}
-						}}
-					/>
+					{canDraw &&
+						bins.map((bin, i) => {
+							const x1 = msToX(bin.startMs)
+							const x2 = msToX(bin.endMs)
+							const barHeight = heightOf(bin, maxCount, rowHeight)
+							const beyondCursor = bin.startMs > cursorMs
+							return (
+								<g
+									key={bin.startMs}
+									{...(!compact
+										? {
+												onPointerEnter: () => setHoverIndex(i),
+												onPointerLeave: () =>
+													setHoverIndex((cur) => (cur === i ? null : cur)),
+											}
+										: {})}
+								>
+									{/* Hit-layer invisibile a tutta altezza: target hover più comodo del
+									    mark sottile, copre anche lo spazio sopra un bin basso/vuoto. */}
+									{!compact && (
+										<rect
+											x={x1}
+											y={0}
+											width={Math.max(0, x2 - x1)}
+											height={rowHeight}
+											fill="transparent"
+											style={{ pointerEvents: 'all' }}
+										/>
+									)}
+									{bin.count > 0 && bin.maxClassId && (
+										<rect
+											ref={(el) => {
+												rectRefs.current[i] = el
+											}}
+											x={x1 + 0.5}
+											y={rowHeight - barHeight}
+											width={Math.max(0, x2 - x1 - 1)}
+											height={barHeight}
+											fill={colors[bin.maxClassId]}
+											opacity={beyondCursor ? 0.25 : 1}
+										/>
+									)}
+								</g>
+							)
+						})}
+					{canDraw && (
+						<line
+							ref={cursorLineRef}
+							x1={msToX(cursorMs)}
+							x2={msToX(cursorMs)}
+							y1={0}
+							y2={rowHeight}
+							strokeWidth={2}
+							className="stroke-primary outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+							role="slider"
+							tabIndex={0}
+							aria-labelledby={readoutLabelId}
+							aria-valuemin={Math.floor(domainStart / 1000)}
+							aria-valuemax={Math.floor(domainEnd / 1000)}
+							aria-valuenow={Math.floor(cursorMs / 1000)}
+							aria-valuetext={readout}
+							onFocus={() => setSliderFocused(true)}
+							onBlur={() => setSliderFocused(false)}
+							onKeyDown={(e) => {
+								const currentIndex = indexOfBin(cursorMs)
+								switch (e.key) {
+									case 'ArrowLeft':
+										e.preventDefault()
+										commitBinIndex(currentIndex - 1)
+										return
+									case 'ArrowRight':
+										e.preventDefault()
+										if (currentIndex >= bins.length - 1) onCommit(null)
+										else commitBinIndex(currentIndex + 1)
+										return
+									case 'PageUp':
+										e.preventDefault()
+										commitBinIndex(currentIndex - 10)
+										return
+									case 'PageDown':
+										e.preventDefault()
+										if (currentIndex + 10 >= bins.length - 1) onCommit(null)
+										else commitBinIndex(currentIndex + 10)
+										return
+									case 'Home':
+										e.preventDefault()
+										commitBinIndex(0)
+										return
+									case 'End':
+										e.preventDefault()
+										onCommit(null)
+										return
+									default:
+										return
+								}
+							}}
+						/>
+					)}
 				</svg>
 
-				{tooltipBin && (
+				{canDraw && tooltipBin && (
 					<div
 						className="pointer-events-none absolute bottom-full z-10 mb-1.5 -translate-x-1/2 rounded-md border border-border bg-card px-2 py-1 text-[10px] leading-tight whitespace-nowrap text-foreground shadow-sm"
 						style={{ left: (msToX(tooltipBin.startMs) + msToX(tooltipBin.endMs)) / 2 }}
