@@ -629,3 +629,29 @@ La striscia sta SOTTO l'header (decisione brainstorming n.8): niente ancoraggio 
 - Scala sqrt sulle altezze (bin singoli leggibili accanto ai picchi di sciame), min-height 2px.
 - Tooltip custom leggero (div posizionato), non ui/tooltip: un solo tooltip attivo, 90+ target, overhead non giustificato.
 - La tastiera committa subito (niente livello imperativo): un solo percorso di commit per gesto discreto.
+
+---
+
+## Esito esecuzione (2026-08-02)
+
+7/7 task completati su main, subagent-driven. Gate finale verde (131 test). Verifica visiva: utente, su tutti i punti della checklist (desktop/mobile, entrambi i temi).
+
+- **T1** `?t` in url-state: `971887f` — **T2** logica pura: `63ce8b0`+`bfa1966` (fix round: DST reale — romeDayStartMs verify/correct, bin giornalieri per giorno di calendario)
+- **T3** filtri mappa: `58c6bcd` — **T4** componente Timeline: `090fea0`+`393fcc2` (fix on-field: ResizeObserver su callback ref, guardie NaN)
+- **T5** wiring: `650f1ad`+`865fef5` (fix round Critical: clamp+deselezione in un solo effect, replace atomico — riprodotto e verificato in browser)
+- **T6** compact mobile: `fabbda4` (review formale assorbita dalla review finale + verifica visiva utente)
+- Fix on-field drawer: `99a646d` (PEEK dedup + contenuto cappato allo snap visibile → ScrollArea del dettaglio funzionante)
+- Interludi utente/feature: icona Earthquake + tuning (`e929a7a`), menu opzioni header con controllo variante A/B e rimozione switcher mappa (`4902d35`), PWA (`3bafa91`), pulizia MobileSheet (`a413c5b`)
+- **Review finale whole-branch (fable)** su `b7d1365..a413c5b`: 1 Critical (filtro mappa imperativo stantio dopo scrub→LIVE o pointer cancel: nascondeva gli eventi nuovi del polling), 1 Important (re-clamp mai rilanciato con structural sharing TanStack), 2 minor — **tutti chiusi in `0952831`**, verificati dal controller sul diff
+
+### Deferred (triagiati stays-deferred dalla review finale)
+
+- Scrim a FULL blocca solo il pointer: manca `inert` sull'overlay top (tastiera/SR raggiungono contenuto dichiarato inattivo)
+- `binEvents` ricalcolato a ogni tick 1s × 2 istanze (innocuo; memo su now quantizzato se serve)
+- Ramo `disabled`/senza-href di MenuEntry mai usato (scaffold)
+- Tooltip count senza `font-mono`; `globalThis.matchMedia` vs pattern repo; timeline.tsx 447 righe (decomporre se cresce)
+- **Product call aperta**: dot LIVE rosso nell'header durante scrub storico (tocca "un solo elemento loud") — decidere prima della pubblicazione
+
+### Fuori scope confermati → piani successivi
+
+Mini-chart giornaliero sidebar, aggregazione server-side bin, range libero, zoom timeline, service worker/offline (scelta dichiarata nel commit PWA: freshness prima di tutto).
