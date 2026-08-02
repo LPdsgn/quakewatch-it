@@ -960,3 +960,25 @@ L'utente ha già eseguito `shadcn init` (components.json: style **base-nova** �
 ## Fuori scope (→ Piano 3)
 
 Timeline + scrubber + istogramma, expert mode Tweakpane, pagine `/evento/[eventId]` SEO e `/info`, banner "dati non aggiornati"/offline detection, toast Sonner sugli errori di polling (Sonner è installato ma il wiring degli stati di resilienza è Piano 3), test-gap ereditati non toccati dai moduli di questo piano.
+
+---
+
+## Esito esecuzione (2026-08-02) e debito residuo
+
+Eseguito con subagent-driven-development: 13/13 task (commit 0cc0b30..0122019), review per-task con 5 fix round totali (T2 test regressione alias, T5 token overlay, T6 env vitest scoped, T10 pulse/flyTo ×2, T12 header mobile), review finale whole-branch (verdetto: mergeable dopo fix wave 0122019 — attribuzione INGV su mappa, stato errore onesto, skeleton SSR, drift-guard theme.css, focus management, ora italiana Europe/Rome). Gate finale: 73 test verdi (36 core + 10 tokens + 27 web), lint/lint:types/typecheck/format/build puliti.
+
+**Residuo parcheggiato:** la Summary inline del sheet mobile (stato PEEK) non riceve `hasError` — mostra 0 invece di — su fetch fallita; fix di 1 riga quando si tocca mobile-sheet.
+
+**Deferred → Piano 3:** import senza .ts in tokens/index.ts; copy errore dettaglio copre anche 404; React.memo su QuakeMap/Summary se l'albero cresce (timeline lo imporrà); roving tabindex su liste lunghe; encodeURIComponent negli hook core; guard RAF cleanup su unmount mappa (necessario con /evento/[id]).
+
+## DEBITO VISIVO — checklist per il pass manuale/browser (bloccante prima di dichiarare la fase chiusa)
+
+- Mobile PEEK (375/390): attribuzione INGV visibile (attribution control mappa) e non coperta dal sheet; chips leggibili; safe-area bottom
+- Sheet a FULL: toggle tema raggiungibile o coperto? Drag tra snap; PEEK↔HALF senza salti
+- Entrambi i temi × 4 breakpoint: costa leggibile (terra>acqua in dark), parità dark/light dei pane
+- Switch tema live con pulse attivo e dettaglio aperto; primo load in light
+- Disciplina accento: un solo rosso per schermo; focus ring non crea un secondo "loud"
+- Mappa: click marker↔lista, no flyTo su click diretto, flyTo da lista, age-fade, pulse solo 24h, reduced-motion, maxBounds, ri-click stesso marker
+- Deep-link `/?window=7d&area=campi-flegrei&event=<id>` desktop+mobile; back; evento 46608102 (storico 4 origins) vs evento 1 origin
+- Tipografia: resa senza antialiased; tnum/zero; troncamenti; clock
+- Stati: skeleton, empty con soglia M≥2 su 30/90g, stato errore, "Dati non disponibili"
