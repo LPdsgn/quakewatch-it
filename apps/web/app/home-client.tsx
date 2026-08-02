@@ -2,10 +2,10 @@
 
 import { useEventsQuery, WINDOW_CONFIG, type TimeWindow } from '@quakewatch/core'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
 import { MapLegend } from '@/components/map-legend'
-import { QuakeMap } from '@/components/quake-map'
+import { QuakeMap, type QuakeMapHandle } from '@/components/quake-map'
 import { AreaPreset } from '@/components/shell/area-preset'
 import { EventDetail } from '@/components/shell/event-detail'
 import { EventDetailFloat } from '@/components/shell/event-detail-float'
@@ -15,9 +15,10 @@ import { MobileSheet } from '@/components/shell/mobile-sheet'
 import { SideFooter } from '@/components/shell/side-footer'
 import { Strongest } from '@/components/shell/strongest'
 import { Summary } from '@/components/shell/summary'
-import { TimelineSlot } from '@/components/shell/timeline-slot'
+import { Timeline } from '@/components/timeline'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SHEET_HALF, SHEET_PEEK } from '@/lib/layout-constants'
+import { clampT, shouldDeselect } from '@/lib/timeline'
 import { parseAppState, serializeAppState, type Variant } from '@/lib/url-state'
 import { cn } from '@/lib/utils'
 
@@ -42,7 +43,10 @@ export function HomeClient() {
 	const state = parseAppState(searchParams)
 
 	const { data, isLoading, isError } = useEventsQuery(state.window, state.area)
-	const events = data?.events ?? []
+	// useMemo: `data` è stabile tra render (TanStack Query) ma `?? []` senza memo creerebbe un
+	// nuovo array a ogni render finché `data` è undefined, invalidando a cascata visibleEvents
+	// sotto e gli effect che dipendono da `events`.
+	const events = useMemo(() => data?.events ?? [], [data])
 
 	// Ultimo evento selezionato prima di "indietro": ripristina il focus lì in EventList (a11y).
 	// Ref, non state — non deve causare un re-render, solo essere letto al prossimo render
@@ -76,6 +80,56 @@ export function HomeClient() {
 		const id = setInterval(tick, 1000)
 		return () => clearInterval(id)
 	}, [])
+
+	// t: URL → clamp col clock condiviso. Il clamp NON vive nel parse (pura): qui c'è nowMs.
+	const tMs = state.t !== null ? state.t * 1000 : null
+
+	// Correzione URL: t fuori range (finestra cambiata, t nel futuro) si riscrive una volta nota l'ora.
+	// hasClock (non nowMs) in dep: correggi al primo tick, non a ogni secondo — router/pathname/state
+	// sono letti nell'effect ma volutamente esclusi dalle dep, altrimenti l'effect ripartirebbe a
+	// ogni tick dell'orologio (state è un nuovo oggetto ad ogni render via parseAppState).
+	const hasClock = nowMs !== null
+	// oxlint-disable react-hooks/exhaustive-deps -- vedi commento sopra
+	useEffect(() => {
+		if (nowMs === null || state.t === null) return
+		const clamped = clampT(state.t, nowMs, state.window)
+		if (clamped !== state.t) {
+			const qs = serializeAppState({ ...state, t: clamped })
+			router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+		}
+	}, [hasClock, state.t, state.window])
+	// oxlint-enable react-hooks/exhaustive-deps
+
+	// Snapshot per lista/riepilogo/più-forti (la mappa NON usa questo: filtra via expression)
+	const visibleEvents = useMemo(
+		() => (tMs !== null ? events.filter((e) => new Date(e.time).getTime() <= tMs) : events),
+		[events, tMs]
+	)
+
+	// isLive: pulse/affordance live solo su 24h E sul presente
+	const isLive = state.window === '24h' && state.t === null
+
+	// Deselezione coerente: scrub prima dell'evento selezionato → selezione azzerata.
+	// Se l'evento non è nella finestra (deep-link), il suo time non è noto qui: non si giudica.
+	// router/pathname/state esclusi dalle dep di proposito, come nell'effect di clamp sopra.
+	// oxlint-disable react-hooks/exhaustive-deps -- vedi commento sopra
+	useEffect(() => {
+		if (state.event === null || tMs === null) return
+		const selected = events.find((e) => e.eventId === state.event)
+		if (selected && shouldDeselect(new Date(selected.time).getTime(), tMs)) {
+			const qs = serializeAppState({ ...state, event: null })
+			router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+		}
+	}, [tMs, state.event, events])
+	// oxlint-enable react-hooks/exhaustive-deps
+
+	const mapHandleRef = useRef<QuakeMapHandle | null>(null)
+
+	function handleTimeCommit(tSec: number | null) {
+		const qs = serializeAppState({ ...state, t: tSec })
+		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+	}
+	const handleScrub = (ms: number | null) => mapHandleRef.current?.setTimeFilter(ms)
 
 	function handleAreaWindowChange(area: string, window: TimeWindow) {
 		const qs = serializeAppState({ ...state, area, window })
@@ -121,7 +175,7 @@ export function HomeClient() {
 				Dati non disponibili al momento.
 			</div>
 		)
-	} else if (events.length === 0) {
+	} else if (visibleEvents.length === 0) {
 		listContent = (
 			<div className="dot-grid flex flex-1 items-center justify-center rounded-xl border border-border bg-card px-4 text-center text-xs text-muted-foreground">
 				{emptyLabel}
@@ -130,7 +184,7 @@ export function HomeClient() {
 	} else {
 		listContent = (
 			<EventList
-				events={events}
+				events={visibleEvents}
 				selectedId={state.event}
 				onSelect={handleSelectEvent}
 				nowMs={nowMs}
@@ -172,14 +226,14 @@ export function HomeClient() {
 			<div className="col-start-1 row-start-1 row-span-2 hidden flex-col gap-2 overflow-hidden bg-sidebar p-2 md:flex">
 				<Header isLive={state.window === '24h'} nowMs={nowMs} />
 				<Summary
-					events={events}
+					events={visibleEvents}
 					isLoading={isLoading}
 					hasError={isError}
 					onSelectEvent={handleSelectEvent}
 					nowMs={nowMs}
 				/>
 				<Strongest
-					events={events}
+					events={visibleEvents}
 					selectedId={state.event}
 					onSelect={handleSelectEvent}
 					nowMs={nowMs}
@@ -196,7 +250,7 @@ export function HomeClient() {
 				<div className="pointer-events-auto flex flex-col gap-2 pt-2">
 					<Header isLive={state.window === '24h'} nowMs={nowMs} />
 					<Summary
-						events={events}
+						events={visibleEvents}
 						isLoading={isLoading}
 						hasError={isError}
 						onSelectEvent={handleSelectEvent}
@@ -211,8 +265,10 @@ export function HomeClient() {
 					events={events}
 					selectedId={state.event}
 					onSelect={handleSelectEvent}
-					isLive={state.window === '24h'}
+					isLive={isLive}
 					showShakemap={showShakemap}
+					timeFilterMs={tMs}
+					handleRef={mapHandleRef}
 				/>
 				<MapLegend showMmi={showShakemap} sheetSnap={sheetSnap} />
 				{state.variant === 'detail-float' && detailNode && (
@@ -252,13 +308,22 @@ export function HomeClient() {
 				)}
 			</div>
 
-			{/* Timeline: solo desktop. Sotto md è un placeholder (Piano 3 la sostituisce con la
-			    timeline reale) — costruire ora una variante mobile compatta per un placeholder
-			    sarebbe lavoro rifatto due volte; si riconsidera quando arriva la timeline vera. */}
-			<TimelineSlot />
+			{/* Timeline: solo desktop (Piano 4 T5). Variante mobile compact: Piano 4 T6. */}
+			<div className="hidden overflow-hidden border-t border-border md:col-start-2 md:row-start-2 md:flex">
+				<Timeline
+					events={events}
+					window={state.window}
+					tMs={tMs}
+					nowMs={nowMs}
+					isLoading={isLoading}
+					hasError={isError}
+					onCommit={handleTimeCommit}
+					onScrub={handleScrub}
+				/>
+			</div>
 
 			<MobileSheet
-				events={events}
+				events={visibleEvents}
 				isLoading={isLoading}
 				hasError={isError}
 				area={state.area}

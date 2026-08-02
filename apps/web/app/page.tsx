@@ -1,6 +1,5 @@
 import { Suspense } from 'react'
 
-import { TimelineSlot } from '@/components/shell/timeline-slot'
 import { Skeleton } from '@/components/ui/skeleton'
 
 import { HomeClient } from './home-client'
@@ -17,7 +16,13 @@ function HomeSkeleton() {
 				<div className="flex-1 rounded-xl border border-border bg-card" />
 			</div>
 			<div className="col-start-1 row-start-1 overflow-hidden bg-card md:col-start-2" />
-			<TimelineSlot />
+			{/* Stessa griglia della Timeline reale (home-client.tsx): il suo stesso skeleton di
+			    caricamento, per non avere due varianti di placeholder da mantenere. */}
+			<div className="hidden overflow-hidden border-t border-border md:col-start-2 md:row-start-2 md:flex">
+				<div className="flex h-10 w-full items-center px-4">
+					<Skeleton className="h-8 w-full" />
+				</div>
+			</div>
 		</div>
 	)
 }
