@@ -297,10 +297,22 @@ export function Timeline({
 					}}
 					onPointerUp={() => {
 						if (dragMs === null) return
-						onCommit(clampT(Math.floor(dragMs / 1000), now, timeWindow))
+						const clamped = clampT(Math.floor(dragMs / 1000), now, timeWindow)
+						// Riallinea il filtro imperativo della mappa al valore committato: react-map-gl
+						// diffa le prop nuove contro le PRECEDENTI, non lo stato live della mappa — se il
+						// commit coincide con la prop tMs corrente (es. rilascio a bordo destro in live),
+						// nessun re-render corregge il setFilter e la mappa resta bloccata all'istante del
+						// rilascio (review finale, finding critico).
+						onScrub(clamped === null ? null : clamped * 1000)
+						onCommit(clamped)
 						setDragMs(null)
 					}}
-					onPointerCancel={() => setDragMs(null)}
+					onPointerCancel={() => {
+						// Stesso buco del commit: senza questo, il filtro imperativo resta fermo
+						// all'istante dell'interruzione invece di tornare al valore committato (tMs prop).
+						onScrub(tMs)
+						setDragMs(null)
+					}}
 				>
 					{canDraw &&
 						bins.map((bin, i) => {
@@ -379,12 +391,12 @@ export function Timeline({
 										return
 									case 'PageUp':
 										e.preventDefault()
-										commitBinIndex(currentIndex - 10)
+										if (currentIndex + 10 >= bins.length - 1) onCommit(null)
+										else commitBinIndex(currentIndex + 10)
 										return
 									case 'PageDown':
 										e.preventDefault()
-										if (currentIndex + 10 >= bins.length - 1) onCommit(null)
-										else commitBinIndex(currentIndex + 10)
+										commitBinIndex(currentIndex - 10)
 										return
 									case 'Home':
 										e.preventDefault()

@@ -94,11 +94,20 @@ export function HomeClient() {
 	// i campi elencati devono rilanciare il calcolo.
 	const hasClock = nowMs !== null
 
+	// Tick a bassa frequenza (1/min) per il solo scopo di rilanciare il clamp qui sotto: senza
+	// questo, una pagina storica aperta a lungo con t vicino all'inizio finestra non si riclampa
+	// mai quando `events` mantiene identità stabile per structural sharing di TanStack Query
+	// (nessun evento nuovo → stesso riferimento → l'effect sotto non rilancia) mentre la finestra
+	// scorre sotto t (finding review T-final #2).
+	const clampTick = nowMs === null ? null : Math.floor(nowMs / 60_000)
+
 	// Correzione URL atomica: clamp di t e deselezione coerente calcolati sullo stesso draft,
 	// UN solo replace — due effect separati si sovrascrivevano a vicenda nello stesso flush
 	// (il secondo ributtava nell'URL il t non clampato: finding review T5). La deselezione usa
 	// il t GIÀ clampato (tMsNext), che copre anche il caso t fuori-finestra E prima dell'evento
-	// selezionato nello stesso deep-link.
+	// selezionato nello stesso deep-link. clampTick (1/min) è in dep apposta: `events` da solo
+	// non rilancia quando TanStack mantiene la stessa identità (structural sharing) pur essendo
+	// la finestra scorsa nel frattempo (finding review T-final #2).
 	// oxlint-disable react-hooks/exhaustive-deps -- vedi commento sopra
 	useEffect(() => {
 		if (nowMs === null) return
@@ -118,7 +127,7 @@ export function HomeClient() {
 			const qs = serializeAppState(next)
 			router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
 		}
-	}, [hasClock, state.t, state.window, state.event, events])
+	}, [hasClock, state.t, state.window, state.event, events, clampTick])
 	// oxlint-enable react-hooks/exhaustive-deps
 
 	const mapHandleRef = useRef<QuakeMapHandle | null>(null)
