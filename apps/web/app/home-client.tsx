@@ -8,6 +8,7 @@ import { MapLegend } from '@/components/map-legend'
 import { QuakeMap } from '@/components/quake-map'
 import { AreaPreset } from '@/components/shell/area-preset'
 import { EventDetail } from '@/components/shell/event-detail'
+import { EventDetailFloat } from '@/components/shell/event-detail-float'
 import { EventList } from '@/components/shell/event-list'
 import { Header } from '@/components/shell/header'
 import { MobileSheet } from '@/components/shell/mobile-sheet'
@@ -15,7 +16,12 @@ import { SideFooter } from '@/components/shell/side-footer'
 import { Summary } from '@/components/shell/summary'
 import { TimelineSlot } from '@/components/shell/timeline-slot'
 import { Skeleton } from '@/components/ui/skeleton'
-import { parseAppState, serializeAppState } from '@/lib/url-state'
+import { parseAppState, serializeAppState, type Variant } from '@/lib/url-state'
+import { cn } from '@/lib/utils'
+
+// Switcher A/B (T6): solo dev, mai in produzione — la variante resta comunque raggiungibile
+// via URL (?variant=detail-float) indipendentemente da questo toggle.
+const SHOW_VARIANT_SWITCHER = process.env.NODE_ENV !== 'production'
 
 const WINDOW_TEXT: Record<TimeWindow, string> = {
 	'24h': 'nelle ultime 24 ore',
@@ -71,23 +77,22 @@ export function HomeClient() {
 		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
 	}
 
+	function handleVariantChange(variant: Variant) {
+		const qs = serializeAppState({ ...state, variant })
+		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+	}
+
 	const threshold = WINDOW_CONFIG[state.window].minMagnitude
 	const emptyLabel = threshold
 		? `Nessun evento M≥${threshold} ${WINDOW_TEXT[state.window]}`
 		: `Nessun evento ${WINDOW_TEXT[state.window]}`
 
-	let listSlot: ReactNode
-	if (state.event !== null) {
-		listSlot = (
-			<EventDetail
-				eventId={state.event}
-				onBack={handleClearEvent}
-				showShakemap={showShakemap}
-				onToggleShakemap={setShowShakemap}
-			/>
-		)
-	} else if (isLoading) {
-		listSlot = (
+	// Contenuto lista (loading/errore/vuoto/lista): indipendente dalla selezione, serve da solo
+	// per la sidebar desktop in variante B (T6) dove il dettaglio flotta sulla mappa e la lista
+	// resta visibile invece di essere sostituita.
+	let listContent: ReactNode
+	if (isLoading) {
+		listContent = (
 			<div className="flex flex-1 flex-col gap-1.5 overflow-hidden rounded-xl border border-border bg-card p-2">
 				{Array.from({ length: 5 }, (_, i) => (
 					<Skeleton key={i} className="h-8 w-full shrink-0" />
@@ -95,19 +100,19 @@ export function HomeClient() {
 			</div>
 		)
 	} else if (isError) {
-		listSlot = (
+		listContent = (
 			<div className="dot-grid flex flex-1 items-center justify-center rounded-xl border border-border bg-card px-4 text-center text-xs text-muted-foreground">
 				Dati non disponibili al momento.
 			</div>
 		)
 	} else if (events.length === 0) {
-		listSlot = (
+		listContent = (
 			<div className="dot-grid flex flex-1 items-center justify-center rounded-xl border border-border bg-card px-4 text-center text-xs text-muted-foreground">
 				{emptyLabel}
 			</div>
 		)
 	} else {
-		listSlot = (
+		listContent = (
 			<EventList
 				events={events}
 				selectedId={state.event}
@@ -118,6 +123,24 @@ export function HomeClient() {
 		)
 	}
 
+	const detailNode =
+		state.event !== null ? (
+			<EventDetail
+				eventId={state.event}
+				onBack={handleClearEvent}
+				showShakemap={showShakemap}
+				onToggleShakemap={setShowShakemap}
+			/>
+		) : null
+
+	// listSlot: nodo condiviso da sidebar desktop (variante default) e sheet mobile (sempre,
+	// invariato in T6) — dettaglio se un evento è selezionato, altrimenti il contenuto lista.
+	const listSlot = detailNode ?? listContent
+
+	// sidebarSlot: solo per la colonna sidebar desktop. In variante B il dettaglio flotta sulla
+	// mappa (vedi EventDetailFloat sotto) invece di sostituire la lista qui.
+	const sidebarSlot = state.variant === 'detail-float' ? listContent : listSlot
+
 	return (
 		<div className="grid h-dvh w-screen grid-cols-1 grid-rows-1 bg-background text-foreground md:grid-cols-[360px_1fr] md:grid-rows-[1fr_72px]">
 			{/* Sidebar: sotto md sparisce, sostituita dal bottom sheet (mobile-sheet.tsx) */}
@@ -125,7 +148,7 @@ export function HomeClient() {
 				<Header isLive={state.window === '24h'} nowMs={nowMs} />
 				<Summary events={events} isLoading={isLoading} hasError={isError} />
 				<AreaPreset area={state.area} window={state.window} onChange={handleAreaWindowChange} />
-				{listSlot}
+				{sidebarSlot}
 				<SideFooter />
 			</div>
 
@@ -149,6 +172,41 @@ export function HomeClient() {
 					showShakemap={showShakemap}
 				/>
 				<MapLegend showMmi={showShakemap} />
+				{state.variant === 'detail-float' && detailNode && (
+					<EventDetailFloat>{detailNode}</EventDetailFloat>
+				)}
+				{SHOW_VARIANT_SWITCHER && (
+					<div className="pointer-events-none absolute top-2 right-2 z-20 hidden md:block">
+						<div className="pointer-events-auto flex gap-1 rounded-lg border border-border bg-card/85 p-1 text-[10px] backdrop-blur-sm">
+							<button
+								type="button"
+								aria-pressed={state.variant === 'default'}
+								onClick={() => handleVariantChange('default')}
+								className={cn(
+									'rounded-md px-1.5 py-0.5',
+									state.variant === 'default'
+										? 'bg-muted text-foreground'
+										: 'text-muted-foreground'
+								)}
+							>
+								A · sidebar
+							</button>
+							<button
+								type="button"
+								aria-pressed={state.variant === 'detail-float'}
+								onClick={() => handleVariantChange('detail-float')}
+								className={cn(
+									'rounded-md px-1.5 py-0.5',
+									state.variant === 'detail-float'
+										? 'bg-muted text-foreground'
+										: 'text-muted-foreground'
+								)}
+							>
+								B · float
+							</button>
+						</div>
+					</div>
+				)}
 			</div>
 
 			{/* Timeline: solo desktop. Sotto md è un placeholder (Piano 3 la sostituisce con la

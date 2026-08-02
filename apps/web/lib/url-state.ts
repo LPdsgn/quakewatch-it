@@ -1,15 +1,19 @@
 import { TIME_WINDOWS, findAreaPreset, type TimeWindow } from '@quakewatch/core'
 
+/** Variante A/B del dettaglio evento (T6): 'default' sostituisce la lista, 'detail-float' flotta sulla mappa. */
+export type Variant = 'default' | 'detail-float'
+
 export interface AppState {
 	window: TimeWindow
 	area: string
 	event: string | null
+	variant: Variant
 }
 
 /**
  * Parsa i parametri URL in AppState con validazione.
- * Valori non validi o assenti usano i default: window='24h', area='italia', event=null.
- * L'area deve esistere in findAreaPreset; l'event deve essere numerico (^\d+$).
+ * Valori non validi o assenti usano i default: window='24h', area='italia', event=null, variant='default'.
+ * L'area deve esistere in findAreaPreset; l'event deve essere numerico (^\d+$); variant deve essere 'detail-float'.
  */
 export function parseAppState(params: URLSearchParams): AppState {
 	// window: valida contro TIME_WINDOWS, default '24h'
@@ -27,13 +31,16 @@ export function parseAppState(params: URLSearchParams): AppState {
 	const eventParam = params.get('event')
 	const event = eventParam && /^\d+$/.test(eventParam) ? eventParam : null
 
-	return { window, area, event }
+	// variant: solo 'detail-float' è riconosciuto, ogni altro valore (o assenza) → 'default'
+	const variant: Variant = params.get('variant') === 'detail-float' ? 'detail-float' : 'default'
+
+	return { window, area, event, variant }
 }
 
 /**
  * Serializza AppState in query string.
  * Omette i valori di default per produrre URL puliti.
- * Ordine stabile: window, area, event.
+ * Ordine stabile: window, area, event, variant.
  */
 export function serializeAppState(state: AppState): string {
 	const params = new URLSearchParams()
@@ -47,6 +54,9 @@ export function serializeAppState(state: AppState): string {
 	}
 	if (state.event !== null) {
 		params.append('event', state.event)
+	}
+	if (state.variant !== 'default') {
+		params.append('variant', state.variant)
 	}
 
 	return params.toString()
