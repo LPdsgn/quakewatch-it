@@ -193,3 +193,28 @@ apps/web/app/home-client.tsx         — wiring + ?variant= per l'A/B
 ## Fuori scope (→ Piano 4+)
 
 Timeline+scrubber (eredita le scale di questo piano), mini-chart andamento giornaliero in sidebar (stesso dataset della timeline), overlay raster ShakeMap, expert mode Tweakpane, pagine /evento/[id] e /info, stati resilienza avanzati (banner staleness/offline).
+
+---
+
+## Esito esecuzione (2026-08-02)
+
+Tutti i 9 task completati su main, subagent-driven, review per task + review finale whole-branch (fable). Gate finale 6/6 verde (111 test: tokens 23, core 47, web 41). Verifica visiva browser (light/dark, desktop/mobile): superata.
+
+- **T1–T3** scale token + mappa bivariata + legenda: commit `8f94de5`, `83eab2d`, `5ff11cd`+`17bf686` (fix round)
+- **T4** proxy ShakeMap: `a68ccd1` — **T5** layer+toggle: `86f4db4`+`714e1aa` (fix round: reset showShakemap state-derived, 502 ≠ assenza)
+- **T6** A/B dettaglio flottante: `3758eb2`+`bba5b70` (fix round: key={state.event}) — **verdetto utente: vince B (float)**; cleanup variante A → piano successivo
+- **T7** I più forti + hero: `ae4296f` — **T8** residui Piano 2: `89aa9da`
+- Interludio utente: `32bd51d` (dvh), `c192aec` (cap sheet HALF), `bdcf98b` (switch Mappa d'impatto, X desktop), più tuning vari
+- Fix wave review finale: `9326658` (useId per switch ShakeMap, focus stabile back button su mobile)
+
+### Da fare nel piano successivo (fix-scheduled, non silenziosamente deferred)
+
+1. **Legenda mobile irraggiungibile a HALF** (Important della review finale): l'offset deriva solo da SHEET_PEEK ma col dettaglio aperto lo sheet sta a HALF proprio quando appare la legenda MMI — derivare offset/ancoraggio dallo snap reale del sheet
+2. Cleanup variante A (perdente) + rimozione switcher dev
+3. `units`/`weight` opzionali in `ShakemapContours` + test 502 guard-fails + assert no-store nel test timeout
+4. Valutare infra RTL/happy-dom in apps/web (ritira i deferred "nessun component test")
+5. Edge case: focus-steal al crossing runtime del breakpoint 768px con dettaglio aperto (minor, nota della re-review fix wave)
+
+### Deferred minori (triagiati "stays deferred" dalla review finale)
+
+Duplicazioni difendibili (fetchShakemap/fetchEventDetail, one-liner evento più recente ×3, row markup Strongest), showMmi=intento non stato layer, tooltip località Strongest, skeleton height drift, pop-in ShakemapSection, variant param non gated in produzione (moot col cleanup A). Dettaglio completo nel ledger `.superpowers/sdd/2026-08-02-ui-mappa-dataviz/progress.md` (storico in git).
