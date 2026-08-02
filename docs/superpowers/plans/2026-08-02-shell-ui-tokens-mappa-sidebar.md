@@ -971,7 +971,9 @@ Eseguito con subagent-driven-development: 13/13 task (commit 0cc0b30..0122019), 
 
 **Deferred → Piano 3:** import senza .ts in tokens/index.ts; copy errore dettaglio copre anche 404; React.memo su QuakeMap/Summary se l'albero cresce (timeline lo imporrà); roving tabindex su liste lunghe; encodeURIComponent negli hook core; guard RAF cleanup su unmount mappa (necessario con /evento/[id]).
 
-## DEBITO VISIVO — checklist per il pass manuale/browser (bloccante prima di dichiarare la fase chiusa)
+> **Esito visual pass (2026-08-02, utente):** SUPERATA con annotazioni — il risultato visivo è approvato; le annotazioni puntuali dell'utente confluiscono come input nel Piano 3 "UI, mappa e dataviz" (che assorbe anche: legenda, codifica bivariata dei marker, dettaglio flottante A/B, layer ShakeMap, round 2 sidebar). **Riordino fasi confermato: timeline → Piano 4.**
+
+## DEBITO VISIVO — checklist per il pass manuale/browser (saldato, vedi esito sopra)
 
 - Mobile PEEK (375/390): attribuzione INGV visibile (attribution control mappa) e non coperta dal sheet; chips leggibili; safe-area bottom
 - Sheet a FULL: toggle tema raggiungibile o coperto? Drag tra snap; PEEK↔HALF senza salti
