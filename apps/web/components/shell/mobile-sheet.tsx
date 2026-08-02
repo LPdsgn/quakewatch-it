@@ -13,6 +13,9 @@ import { SHEET_PEEK } from '@/lib/layout-constants'
 const HALF = 0.5
 const FULL = 0.85
 const SNAP_POINTS = [SHEET_PEEK, HALF, FULL]
+// Col dettaglio aperto FULL sparisce dai punti raggiungibili: HALF basta per le informazioni
+// e tiene visibile la porzione di mappa con l'epicentro selezionato.
+const SNAP_POINTS_DETAIL = [SHEET_PEEK, HALF]
 
 export interface MobileSheetProps {
 	events: Earthquake[]
@@ -43,14 +46,14 @@ export function MobileSheet({
 	onAreaWindowChange,
 }: MobileSheetProps) {
 	// Init lazy sull'eventId iniziale: su deep-link con evento in URL evita il flash
-	// PEEK→FULL al primo render (altrimenti si vedrebbe un frame a peek prima dell'effect).
-	const [snapPoint, setSnapPoint] = useState<number>(() => (eventId !== null ? FULL : SHEET_PEEK))
+	// PEEK→HALF al primo render (altrimenti si vedrebbe un frame a peek prima dell'effect).
+	const [snapPoint, setSnapPoint] = useState<number>(() => (eventId !== null ? HALF : SHEET_PEEK))
 
-	// Selezionare un evento porta il sheet a tutta altezza per mostrare il dettaglio.
+	// Selezionare un evento porta il sheet a metà altezza (cap: mai FULL col dettaglio aperto).
 	// Il "indietro" (eventId → null) NON resetta lo snap point: scelta intenzionale, non
-	// svista — resta dov'era (in genere FULL) invece di risnappare a PEEK/HALF a sorpresa.
+	// svista — resta dov'era invece di risnappare a PEEK a sorpresa.
 	useEffect(() => {
-		if (eventId !== null) setSnapPoint(FULL)
+		if (eventId !== null) setSnapPoint(HALF)
 	}, [eventId])
 
 	const mostRecent = events.toSorted((a, b) => b.time.localeCompare(a.time))[0] ?? null
@@ -85,7 +88,7 @@ export function MobileSheet({
 			open
 			modal={false}
 			showSwipeHandle
-			snapPoints={SNAP_POINTS}
+			snapPoints={eventId !== null ? SNAP_POINTS_DETAIL : SNAP_POINTS}
 			snapPoint={snapPoint}
 			onSnapPointChange={(next) => {
 				if (typeof next === 'number') setSnapPoint(next)
