@@ -24,8 +24,8 @@ export function enableAnalytics() {
 export function disableAnalytics() {
 	enabled = false
 	if (initialized) {
-		posthog.opt_out_capturing()
 		posthog.reset()
+		posthog.opt_out_capturing()
 	}
 }
 

@@ -43,6 +43,7 @@ describe('analytics', () => {
 		analytics.disableAnalytics()
 		expect(optOutCapturing).toHaveBeenCalledOnce()
 		expect(reset).toHaveBeenCalledOnce()
+		expect(reset).toHaveBeenCalledBefore(optOutCapturing)
 		analytics.capture('earthquake_selected')
 		expect(capture).not.toHaveBeenCalled()
 	})
