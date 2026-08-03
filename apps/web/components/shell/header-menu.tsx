@@ -2,6 +2,7 @@
 
 import { EllipsisVertical, ExternalLink } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import posthog from 'posthog-js'
 import type { ComponentType, SVGProps } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -98,7 +99,12 @@ function DesktopMenu() {
 							<DropdownMenuItem
 								key={entry.label}
 								render={
-									<a href={entry.href} target="_blank" rel="noopener noreferrer">
+									<a
+										href={entry.href}
+										onClick={() => posthog.capture('ingv_data_opened')}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
 										<entry.icon /> {entry.label}
 									</a>
 								}
@@ -137,6 +143,7 @@ function MobileMenu() {
 							<a
 								key={entry.label}
 								href={entry.href}
+								onClick={() => posthog.capture('ingv_data_opened')}
 								target="_blank"
 								rel="noopener noreferrer"
 								className="flex items-center gap-2 rounded-lg px-2 py-2.5 text-sm text-foreground hover:bg-muted"

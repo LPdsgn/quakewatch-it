@@ -5,6 +5,7 @@ packages:
 # Equivalente di satus' trustedDependencies (loro usano bun): autorizza i
 # build script nativi. Lista verificata sull'output reale di `pnpm install`.
 allowBuilds:
+   core-js: true
    esbuild: true
    lefthook: true
    sharp: true

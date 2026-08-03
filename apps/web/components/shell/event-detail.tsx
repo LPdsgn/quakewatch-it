@@ -7,6 +7,7 @@ import {
 	type EventDetailResponse,
 } from '@quakewatch/core'
 import { X, ArrowLeft } from 'lucide-react'
+import posthog from 'posthog-js'
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 
 import { Badge } from '@/components/ui/badge'
@@ -220,6 +221,7 @@ function DetailBody({
 
 			<a
 				href={`${INGV_EVENT_URL}${eventId}`}
+				onClick={() => posthog.capture('ingv_event_opened')}
 				target="_blank"
 				rel="noopener noreferrer"
 				className="text-xs text-primary underline-offset-4 hover:underline"

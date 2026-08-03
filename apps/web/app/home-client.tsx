@@ -2,6 +2,7 @@
 
 import { useEventsQuery, WINDOW_CONFIG, type TimeWindow } from '@quakewatch/core'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import posthog from 'posthog-js'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
 import { MapLegend } from '@/components/map-legend'
@@ -133,25 +134,46 @@ export function HomeClient() {
 	const mapHandleRef = useRef<QuakeMapHandle | null>(null)
 
 	function handleTimeCommit(tSec: number | null) {
+		posthog.capture('timeline_time_selected', {
+			is_live: tSec === null,
+			window: state.window,
+		})
 		const qs = serializeAppState({ ...state, t: tSec })
 		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
 	}
 	const handleScrub = (ms: number | null) => mapHandleRef.current?.setTimeFilter(ms)
 
 	function handleAreaWindowChange(area: string, window: TimeWindow) {
+		posthog.capture('area_window_changed', {
+			area,
+			window,
+		})
 		const qs = serializeAppState({ ...state, area, window })
 		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
 	}
 
 	function handleSelectEvent(eventId: string) {
+		posthog.capture('earthquake_selected', {
+			area: state.area,
+			window: state.window,
+		})
 		const qs = serializeAppState({ ...state, event: eventId })
 		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
 	}
 
 	function handleClearEvent() {
+		posthog.capture('earthquake_selection_cleared', {
+			area: state.area,
+			window: state.window,
+		})
 		lastClearedIdRef.current = state.event
 		const qs = serializeAppState({ ...state, event: null })
 		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+	}
+
+	function handleShakemapToggle(next: boolean) {
+		posthog.capture('shakemap_toggled', { enabled: next })
+		setShowShakemap(next)
 	}
 
 	const threshold = WINDOW_CONFIG[state.window].minMagnitude
@@ -210,7 +232,7 @@ export function HomeClient() {
 				eventId={state.event}
 				onBack={handleClearEvent}
 				showShakemap={showShakemap}
-				onToggleShakemap={setShowShakemap}
+				onToggleShakemap={handleShakemapToggle}
 			/>
 		) : null
 
