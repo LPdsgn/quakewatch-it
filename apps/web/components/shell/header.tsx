@@ -2,12 +2,12 @@
 
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
-import posthog from 'posthog-js'
 import { useEffect, useState } from 'react'
 
 import { HeaderMenu } from '@/components/shell/header-menu'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
+import { capture } from '@/lib/analytics'
 import { cn } from '@/lib/utils'
 
 import { Earthquake } from '../icons'
@@ -34,7 +34,7 @@ export function Header({ isLive, nowMs, className }: HeaderProps) {
 
 	function handleThemeToggle() {
 		const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark'
-		posthog.capture('theme_toggled', { theme: nextTheme })
+		capture('theme_toggled', { theme: nextTheme })
 		setTheme(nextTheme)
 	}
 	useEffect(() => setMounted(true), [])

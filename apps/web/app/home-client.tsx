@@ -2,7 +2,6 @@
 
 import { useEventsQuery, WINDOW_CONFIG, type TimeWindow } from '@quakewatch/core'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import posthog from 'posthog-js'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
 import { MapLegend } from '@/components/map-legend'
@@ -18,6 +17,7 @@ import { Strongest } from '@/components/shell/strongest'
 import { Summary } from '@/components/shell/summary'
 import { Timeline } from '@/components/timeline'
 import { Skeleton } from '@/components/ui/skeleton'
+import { capture } from '@/lib/analytics'
 import { SHEET_HALF, SHEET_PEEK } from '@/lib/layout-constants'
 import { clampT, shouldDeselect } from '@/lib/timeline'
 import { parseAppState, serializeAppState } from '@/lib/url-state'
@@ -134,7 +134,7 @@ export function HomeClient() {
 	const mapHandleRef = useRef<QuakeMapHandle | null>(null)
 
 	function handleTimeCommit(tSec: number | null) {
-		posthog.capture('timeline_time_selected', {
+		capture('timeline_time_selected', {
 			is_live: tSec === null,
 			window: state.window,
 		})
@@ -144,7 +144,7 @@ export function HomeClient() {
 	const handleScrub = (ms: number | null) => mapHandleRef.current?.setTimeFilter(ms)
 
 	function handleAreaWindowChange(area: string, window: TimeWindow) {
-		posthog.capture('area_window_changed', {
+		capture('area_window_changed', {
 			area,
 			window,
 		})
@@ -153,7 +153,7 @@ export function HomeClient() {
 	}
 
 	function handleSelectEvent(eventId: string) {
-		posthog.capture('earthquake_selected', {
+		capture('earthquake_selected', {
 			area: state.area,
 			window: state.window,
 		})
@@ -162,7 +162,7 @@ export function HomeClient() {
 	}
 
 	function handleClearEvent() {
-		posthog.capture('earthquake_selection_cleared', {
+		capture('earthquake_selection_cleared', {
 			area: state.area,
 			window: state.window,
 		})
@@ -172,7 +172,7 @@ export function HomeClient() {
 	}
 
 	function handleShakemapToggle(next: boolean) {
-		posthog.capture('shakemap_toggled', { enabled: next })
+		capture('shakemap_toggled', { enabled: next })
 		setShowShakemap(next)
 	}
 

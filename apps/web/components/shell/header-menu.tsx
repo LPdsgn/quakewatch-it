@@ -2,7 +2,6 @@
 
 import { EllipsisVertical, ExternalLink } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import posthog from 'posthog-js'
 import type { ComponentType, SVGProps } from 'react'
 
 import { showCookiePreferences } from '@/components/cookie-consent-banner'
@@ -26,6 +25,7 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { capture } from '@/lib/analytics'
 import { parseAppState, serializeAppState, type Variant } from '@/lib/url-state'
 
 const INGV_URL = 'https://terremoti.ingv.it'
@@ -104,7 +104,7 @@ function DesktopMenu() {
 								render={
 									<a
 										href={entry.href}
-										onClick={() => posthog.capture('ingv_data_opened')}
+										onClick={() => capture('ingv_data_opened')}
 										target="_blank"
 										rel="noopener noreferrer"
 									>
@@ -153,7 +153,7 @@ function MobileMenu() {
 							<a
 								key={entry.label}
 								href={entry.href}
-								onClick={() => posthog.capture('ingv_data_opened')}
+								onClick={() => capture('ingv_data_opened')}
 								target="_blank"
 								rel="noopener noreferrer"
 								className="flex items-center gap-2 rounded-lg px-2 py-2.5 text-sm text-foreground hover:bg-muted"
