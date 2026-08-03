@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import posthog from 'posthog-js'
 import type { ComponentType, SVGProps } from 'react'
 
+import { showCookiePreferences } from '@/components/cookie-consent-banner'
 import { Button } from '@/components/ui/button'
 import {
 	Drawer,
@@ -92,6 +93,8 @@ function DesktopMenu() {
 					<DropdownMenuRadioItem value="detail-float">B · float</DropdownMenuRadioItem>
 				</DropdownMenuRadioGroup>
 				<DropdownMenuSeparator />
+				<DropdownMenuItem onClick={showCookiePreferences}>Privacy e cookie</DropdownMenuItem>
+				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
 					<DropdownMenuLabel>Crediti</DropdownMenuLabel>
 					{MENU_ENTRIES.map((entry) =>
@@ -132,6 +135,13 @@ function MobileMenu() {
 					<DrawerTitle>Opzioni</DrawerTitle>
 				</DrawerHeader>
 				<div className="flex flex-col gap-1 p-4 pt-2 pb-[max(env(safe-area-inset-bottom),1rem)]">
+					<button
+						type="button"
+						onClick={showCookiePreferences}
+						className="flex items-center gap-2 rounded-lg px-2 py-2.5 text-left text-sm text-foreground hover:bg-muted"
+					>
+						Privacy e cookie
+					</button>
 					{MENU_ENTRIES.map((entry) => {
 						const content = (
 							<>

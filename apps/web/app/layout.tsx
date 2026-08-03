@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 
 import './globals.css'
+import { CookieConsentBanner } from '@/components/cookie-consent-banner'
+
 import { Providers } from './providers'
 
 const sans = localFont({
@@ -44,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 	return (
 		<html lang="it" suppressHydrationWarning className={`${sans.variable} ${mono.variable}`}>
 			<body>
+				<CookieConsentBanner />
 				<Providers>{children}</Providers>
 			</body>
 		</html>

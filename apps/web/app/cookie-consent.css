@@ -1,0 +1,40 @@
+#cc-main {
+	--cc-font-family: var(--font-sans);
+	--cc-bg: var(--popover);
+	--cc-primary-color: var(--popover-foreground);
+	--cc-secondary-color: var(--muted-foreground);
+	--cc-btn-primary-bg: var(--primary);
+	--cc-btn-primary-color: var(--primary-foreground);
+	--cc-btn-primary-border-color: var(--primary);
+	--cc-btn-primary-hover-bg: color-mix(in oklch, var(--primary) 85%, black);
+	--cc-btn-primary-hover-color: var(--primary-foreground);
+	--cc-btn-primary-hover-border-color: var(--primary);
+	--cc-btn-secondary-bg: var(--muted);
+	--cc-btn-secondary-color: var(--foreground);
+	--cc-btn-secondary-border-color: var(--muted);
+	--cc-btn-secondary-hover-bg: var(--accent);
+	--cc-btn-secondary-hover-color: var(--accent-foreground);
+	--cc-btn-secondary-hover-border-color: var(--accent);
+	--cc-separator-border-color: var(--border);
+	--cc-toggle-on-bg: var(--primary);
+	--cc-toggle-off-bg: var(--muted);
+	--cc-toggle-on-knob-bg: var(--primary-foreground);
+	--cc-toggle-off-knob-bg: var(--muted-foreground);
+	--cc-cookie-category-block-bg: var(--muted);
+	--cc-cookie-category-block-border: var(--muted);
+	--cc-cookie-category-block-hover-bg: var(--accent);
+	--cc-cookie-category-block-hover-border: var(--accent);
+	--cc-overlay-bg: color-mix(in srgb, var(--overlay) 75%, transparent);
+	--cc-modal-border-radius: var(--radius);
+	--cc-btn-border-radius: calc(var(--radius) * 0.8);
+}
+
+#cc-main .cm--box,
+#cc-main .pm--box {
+	border: 1px solid var(--border);
+}
+
+#cc-main .cm__btn,
+#cc-main .pm__btn {
+	font-family: var(--font-sans);
+}
