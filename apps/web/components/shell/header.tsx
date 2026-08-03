@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { HeaderMenu } from '@/components/shell/header-menu'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
+import { capture } from '@/lib/analytics'
 import { cn } from '@/lib/utils'
 
 import { Earthquake } from '../icons'
@@ -30,6 +31,12 @@ export function Header({ isLive, nowMs, className }: HeaderProps) {
 	// resolvedTheme è undefined in SSR: renderizza il toggle solo dopo il mount.
 	const { resolvedTheme, setTheme } = useTheme()
 	const [mounted, setMounted] = useState(false)
+
+	function handleThemeToggle() {
+		const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark'
+		capture('theme_toggled', { theme: nextTheme })
+		setTheme(nextTheme)
+	}
 	useEffect(() => setMounted(true), [])
 
 	return (
@@ -62,7 +69,7 @@ export function Header({ isLive, nowMs, className }: HeaderProps) {
 								aria-label={
 									resolvedTheme === 'dark' ? 'Attiva tema chiaro' : 'Attiva tema scuro'
 								}
-								onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+								onClick={handleThemeToggle}
 							>
 								{resolvedTheme === 'dark' ? <Sun /> : <Moon />}
 							</Button>

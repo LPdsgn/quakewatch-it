@@ -4,6 +4,7 @@ import { useEventsQuery, WINDOW_CONFIG, type TimeWindow } from '@quakewatch/core
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
+import { CookieConsentBanner } from '@/components/cookie-consent-banner'
 import { MapLegend } from '@/components/map-legend'
 import { QuakeMap, type QuakeMapHandle } from '@/components/quake-map'
 import { AreaPreset } from '@/components/shell/area-preset'
@@ -17,6 +18,8 @@ import { Strongest } from '@/components/shell/strongest'
 import { Summary } from '@/components/shell/summary'
 import { Timeline } from '@/components/timeline'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { capture } from '@/lib/analytics'
 import { SHEET_HALF, SHEET_PEEK } from '@/lib/layout-constants'
 import { clampT, shouldDeselect } from '@/lib/timeline'
 import { parseAppState, serializeAppState } from '@/lib/url-state'
@@ -133,25 +136,46 @@ export function HomeClient() {
 	const mapHandleRef = useRef<QuakeMapHandle | null>(null)
 
 	function handleTimeCommit(tSec: number | null) {
+		capture('timeline_time_selected', {
+			is_live: tSec === null,
+			window: state.window,
+		})
 		const qs = serializeAppState({ ...state, t: tSec })
 		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
 	}
 	const handleScrub = (ms: number | null) => mapHandleRef.current?.setTimeFilter(ms)
 
 	function handleAreaWindowChange(area: string, window: TimeWindow) {
+		capture('area_window_changed', {
+			area,
+			window,
+		})
 		const qs = serializeAppState({ ...state, area, window })
 		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
 	}
 
 	function handleSelectEvent(eventId: string) {
+		capture('earthquake_selected', {
+			area: state.area,
+			window: state.window,
+		})
 		const qs = serializeAppState({ ...state, event: eventId })
 		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
 	}
 
 	function handleClearEvent() {
+		capture('earthquake_selection_cleared', {
+			area: state.area,
+			window: state.window,
+		})
 		lastClearedIdRef.current = state.event
 		const qs = serializeAppState({ ...state, event: null })
 		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+	}
+
+	function handleShakemapToggle(next: boolean) {
+		capture('shakemap_toggled', { enabled: next })
+		setShowShakemap(next)
 	}
 
 	const threshold = WINDOW_CONFIG[state.window].minMagnitude
@@ -210,7 +234,7 @@ export function HomeClient() {
 				eventId={state.event}
 				onBack={handleClearEvent}
 				showShakemap={showShakemap}
-				onToggleShakemap={setShowShakemap}
+				onToggleShakemap={handleShakemapToggle}
 			/>
 		) : null
 
@@ -221,6 +245,8 @@ export function HomeClient() {
 	// sidebarSlot: solo per la colonna sidebar desktop. In variante B il dettaglio flotta sulla
 	// mappa (vedi EventDetailFloat sotto) invece di sostituire la lista qui.
 	const sidebarSlot = state.variant === 'detail-float' ? listContent : listSlot
+
+	const isMobile = useIsMobile()
 
 	return (
 		<div className="grid h-dvh w-screen grid-cols-1 grid-rows-1 bg-background text-foreground md:grid-cols-[360px_1fr] md:grid-rows-[1fr_fit-content(100%)]">
@@ -275,10 +301,14 @@ export function HomeClient() {
 						onScrub={handleScrub}
 					/>
 				</div>
+				{isMobile && <CookieConsentBanner className="pointer-events-auto" />}
 			</div>
 
 			{/* Mappa */}
 			<div className="relative col-start-1 row-start-1 overflow-hidden bg-card md:col-start-2">
+				{!isMobile && (
+					<CookieConsentBanner className="fixed! top-2.5 right-2.5 z-9999 max-w-sm" />
+				)}
 				<QuakeMap
 					events={events}
 					selectedId={state.event}

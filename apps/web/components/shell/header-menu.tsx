@@ -4,6 +4,7 @@ import { EllipsisVertical, ExternalLink } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import type { ComponentType, SVGProps } from 'react'
 
+import { setAnalyticsConsent, useAnalyticsConsent } from '@/components/cookie-consent-banner'
 import { Button } from '@/components/ui/button'
 import {
 	Drawer,
@@ -23,7 +24,9 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Switch } from '@/components/ui/switch'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { capture } from '@/lib/analytics'
 import { parseAppState, serializeAppState, type Variant } from '@/lib/url-state'
 
 const INGV_URL = 'https://terremoti.ingv.it'
@@ -75,6 +78,7 @@ function useVariantControl() {
 
 function DesktopMenu() {
 	const { variant, setVariant } = useVariantControl()
+	const analyticsEnabled = useAnalyticsConsent()
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger render={menuTriggerButton}>
@@ -91,6 +95,18 @@ function DesktopMenu() {
 					<DropdownMenuRadioItem value="detail-float">B · float</DropdownMenuRadioItem>
 				</DropdownMenuRadioGroup>
 				<DropdownMenuSeparator />
+				<DropdownMenuItem
+					render={
+						<div
+							className="flex w-full items-center justify-between gap-4"
+							onPointerDown={(e) => e.stopPropagation()}
+						>
+							Cookie analitici
+							<Switch checked={analyticsEnabled} onCheckedChange={setAnalyticsConsent} />
+						</div>
+					}
+				/>
+				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
 					<DropdownMenuLabel>Crediti</DropdownMenuLabel>
 					{MENU_ENTRIES.map((entry) =>
@@ -98,7 +114,12 @@ function DesktopMenu() {
 							<DropdownMenuItem
 								key={entry.label}
 								render={
-									<a href={entry.href} target="_blank" rel="noopener noreferrer">
+									<a
+										href={entry.href}
+										onClick={() => capture('ingv_data_opened')}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
 										<entry.icon /> {entry.label}
 									</a>
 								}
@@ -116,6 +137,8 @@ function DesktopMenu() {
 }
 
 function MobileMenu() {
+	const analyticsEnabled = useAnalyticsConsent()
+
 	return (
 		<Drawer>
 			<DrawerTrigger render={menuTriggerButton}>
@@ -126,6 +149,10 @@ function MobileMenu() {
 					<DrawerTitle>Opzioni</DrawerTitle>
 				</DrawerHeader>
 				<div className="flex flex-col gap-1 p-4 pt-2 pb-[max(env(safe-area-inset-bottom),1rem)]">
+					<div className="flex items-center justify-between gap-4 rounded-lg px-2 py-2.5 text-sm text-foreground hover:bg-muted">
+						Cookie analitici
+						<Switch checked={analyticsEnabled} onCheckedChange={setAnalyticsConsent} />
+					</div>
 					{MENU_ENTRIES.map((entry) => {
 						const content = (
 							<>
@@ -137,6 +164,7 @@ function MobileMenu() {
 							<a
 								key={entry.label}
 								href={entry.href}
+								onClick={() => capture('ingv_data_opened')}
 								target="_blank"
 								rel="noopener noreferrer"
 								className="flex items-center gap-2 rounded-lg px-2 py-2.5 text-sm text-foreground hover:bg-muted"

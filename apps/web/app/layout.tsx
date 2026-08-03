@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 
 import './globals.css'
+
+import { ConsentSetup } from '@/components/consent-setup'
+
 import { Providers } from './providers'
 
 const sans = localFont({
@@ -44,6 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 	return (
 		<html lang="it" suppressHydrationWarning className={`${sans.variable} ${mono.variable}`}>
 			<body>
+				<ConsentSetup />
 				<Providers>{children}</Providers>
 			</body>
 		</html>
