@@ -103,3 +103,4 @@ tmp/
 
 # scripts locali (non condivisi, es. SQL ad hoc per DB locale)
 scripts/local/
+.env*

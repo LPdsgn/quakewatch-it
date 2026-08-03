@@ -1,5 +1,8 @@
 let analyticsConsent = false
-const listeners = new Set<() => void>()
+const consentListeners = new Set<() => void>()
+
+let bannerVisible = false
+const visibilityListeners = new Set<() => void>()
 
 export function analyticsConsentGranted() {
 	return analyticsConsent
@@ -7,7 +10,7 @@ export function analyticsConsentGranted() {
 
 export function setAnalyticsConsentState(enabled: boolean) {
 	analyticsConsent = enabled
-	listeners.forEach((listener) => listener())
+	consentListeners.forEach((listener) => listener())
 }
 
 export async function hydrateAnalyticsConsent(readConsent: () => Promise<boolean>) {
@@ -15,6 +18,24 @@ export async function hydrateAnalyticsConsent(readConsent: () => Promise<boolean
 }
 
 export function subscribeAnalyticsConsent(listener: () => void) {
-	listeners.add(listener)
-	return () => listeners.delete(listener)
+	consentListeners.add(listener)
+	return () => {
+		consentListeners.delete(listener)
+	}
+}
+
+export function consentBannerVisible() {
+	return bannerVisible
+}
+
+export function setConsentBannerVisible(visible: boolean) {
+	bannerVisible = visible
+	visibilityListeners.forEach((listener) => listener())
+}
+
+export function subscribeConsentBannerVisible(listener: () => void) {
+	visibilityListeners.add(listener)
+	return () => {
+		visibilityListeners.delete(listener)
+	}
 }

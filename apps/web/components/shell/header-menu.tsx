@@ -97,7 +97,10 @@ function DesktopMenu() {
 				<DropdownMenuSeparator />
 				<DropdownMenuItem
 					render={
-						<div className="flex w-full items-center justify-between gap-4">
+						<div
+							className="flex w-full items-center justify-between gap-4"
+							onPointerDown={(e) => e.stopPropagation()}
+						>
 							Cookie analitici
 							<Switch checked={analyticsEnabled} onCheckedChange={setAnalyticsConsent} />
 						</div>

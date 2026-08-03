@@ -4,6 +4,7 @@ import { useEventsQuery, WINDOW_CONFIG, type TimeWindow } from '@quakewatch/core
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
+import { CookieConsentBanner } from '@/components/cookie-consent-banner'
 import { MapLegend } from '@/components/map-legend'
 import { QuakeMap, type QuakeMapHandle } from '@/components/quake-map'
 import { AreaPreset } from '@/components/shell/area-preset'
@@ -17,6 +18,7 @@ import { Strongest } from '@/components/shell/strongest'
 import { Summary } from '@/components/shell/summary'
 import { Timeline } from '@/components/timeline'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { capture } from '@/lib/analytics'
 import { SHEET_HALF, SHEET_PEEK } from '@/lib/layout-constants'
 import { clampT, shouldDeselect } from '@/lib/timeline'
@@ -244,6 +246,8 @@ export function HomeClient() {
 	// mappa (vedi EventDetailFloat sotto) invece di sostituire la lista qui.
 	const sidebarSlot = state.variant === 'detail-float' ? listContent : listSlot
 
+	const isMobile = useIsMobile()
+
 	return (
 		<div className="grid h-dvh w-screen grid-cols-1 grid-rows-1 bg-background text-foreground md:grid-cols-[360px_1fr] md:grid-rows-[1fr_fit-content(100%)]">
 			{/* Sidebar: sotto md sparisce, sostituita dal bottom sheet (mobile-sheet.tsx) */}
@@ -297,10 +301,14 @@ export function HomeClient() {
 						onScrub={handleScrub}
 					/>
 				</div>
+				{isMobile && <CookieConsentBanner className="pointer-events-auto" />}
 			</div>
 
 			{/* Mappa */}
 			<div className="relative col-start-1 row-start-1 overflow-hidden bg-card md:col-start-2">
+				{!isMobile && (
+					<CookieConsentBanner className="fixed! top-2.5 right-2.5 z-9999 max-w-sm" />
+				)}
 				<QuakeMap
 					events={events}
 					selectedId={state.event}

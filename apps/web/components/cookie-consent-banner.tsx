@@ -1,90 +1,71 @@
 'use client'
 
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { Info } from 'lucide-react'
+import { useSyncExternalStore } from 'react'
 import * as CookieConsent from 'vanilla-cookieconsent'
 
+import { Alert, AlertDescription, AlertTitle, AlertAction } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { disableAnalytics, enableAnalytics } from '@/lib/analytics'
 import {
 	analyticsConsentGranted,
-	hydrateAnalyticsConsent,
-	setAnalyticsConsentState,
+	consentBannerVisible,
 	subscribeAnalyticsConsent,
+	subscribeConsentBannerVisible,
 } from '@/lib/analytics-consent'
+import { cn } from '@/lib/utils'
 
 export { analyticsConsentGranted }
 
 export function setAnalyticsConsent(enabled: boolean) {
-	CookieConsent.acceptCategory(enabled ? 'analytics' : [], ['analytics'])
+	CookieConsent.acceptCategory(enabled ? 'analytics' : [], enabled ? [] : ['analytics'])
 }
 
 export function useAnalyticsConsent() {
 	return useSyncExternalStore(subscribeAnalyticsConsent, analyticsConsentGranted, () => false)
 }
 
-export function CookieConsentBanner() {
-	const [visible, setVisible] = useState(false)
+function useConsentBannerVisible() {
+	return useSyncExternalStore(subscribeConsentBannerVisible, consentBannerVisible, () => false)
+}
 
-	useEffect(() => {
-		void (async () => {
-			await CookieConsent.run({
-				categories: {
-					analytics: { enabled: false },
-				},
-				autoShow: false,
-				language: {
-					default: 'it',
-					translations: {
-						it: {
-							consentModal: {},
-							preferencesModal: { sections: [] },
-						},
-					},
-				},
-				onConsent: ({ cookie }) => {
-					const enabled = cookie.categories.includes('analytics')
-					if (enabled) enableAnalytics()
-					else disableAnalytics()
-					setAnalyticsConsentState(enabled)
-					setVisible(false)
-				},
-				onChange: ({ cookie }) => {
-					const enabled = cookie.categories.includes('analytics')
-					if (enabled) enableAnalytics()
-					else disableAnalytics()
-					setAnalyticsConsentState(enabled)
-				},
-			})
-			await hydrateAnalyticsConsent(async () => CookieConsent.acceptedCategory('analytics'))
-			setVisible(!CookieConsent.validConsent())
-		})()
-	}, [])
+export function CookieConsentBanner({ className }: { className?: string }) {
+	const visible = useConsentBannerVisible()
 
 	if (!visible) return null
 
 	return (
-		<section
+		<Alert
 			aria-label="Preferenze cookie"
-			className="fixed right-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-50 w-[calc(100%-1.5rem)] max-w-sm rounded-xl border border-border bg-popover p-4 text-popover-foreground shadow-lg sm:right-4"
+			className={cn(
+				'rounded-xl border border-border bg-card p-3 text-popover-foreground shadow-lg',
+				className
+			)}
 		>
-			<h2 className="text-sm font-semibold">Cookie analitici</h2>
-			<p className="mt-1 text-sm leading-5 text-muted-foreground">
+			<Info />
+			<AlertTitle>Strumenti di analisi</AlertTitle>
+			<AlertDescription className="md:mt-1 text-xs text-muted-foreground max-w-[85%]">
 				Ci aiutano a capire come viene usata QuakeWatch. Sono facoltativi e puoi cambiare scelta
 				dal menu.
-			</p>
-			<div className="mt-4 flex gap-2">
+			</AlertDescription>
+			<AlertAction className="mt-2 flex md:flex-col-reverse gap-2">
 				<Button
 					type="button"
+					size="sm"
 					variant="outline"
-					className="flex-1"
+					className="flex-1 min-h-7"
 					onClick={() => setAnalyticsConsent(false)}
 				>
 					Rifiuta
 				</Button>
-				<Button type="button" className="flex-1" onClick={() => setAnalyticsConsent(true)}>
+				<Button
+					type="button"
+					size="sm"
+					className="flex-1 min-h-7"
+					onClick={() => setAnalyticsConsent(true)}
+				>
 					Accetta
 				</Button>
-			</div>
-		</section>
+			</AlertAction>
+		</Alert>
 	)
 }

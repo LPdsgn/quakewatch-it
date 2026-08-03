@@ -2,7 +2,8 @@ import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 
 import './globals.css'
-import { CookieConsentBanner } from '@/components/cookie-consent-banner'
+
+import { ConsentSetup } from '@/components/consent-setup'
 
 import { Providers } from './providers'
 
@@ -46,7 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 	return (
 		<html lang="it" suppressHydrationWarning className={`${sans.variable} ${mono.variable}`}>
 			<body>
-				<CookieConsentBanner />
+				<ConsentSetup />
 				<Providers>{children}</Providers>
 			</body>
 		</html>
