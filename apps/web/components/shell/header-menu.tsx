@@ -2,9 +2,9 @@
 
 import { EllipsisVertical, ExternalLink } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState, type ComponentType, type SVGProps } from 'react'
+import type { ComponentType, SVGProps } from 'react'
 
-import { analyticsConsentGranted, setAnalyticsConsent } from '@/components/cookie-consent-banner'
+import { setAnalyticsConsent, useAnalyticsConsent } from '@/components/cookie-consent-banner'
 import { Button } from '@/components/ui/button'
 import {
 	Drawer,
@@ -78,8 +78,7 @@ function useVariantControl() {
 
 function DesktopMenu() {
 	const { variant, setVariant } = useVariantControl()
-	const [analyticsEnabled, setAnalyticsEnabled] = useState(false)
-	useEffect(() => setAnalyticsEnabled(analyticsConsentGranted()), [])
+	const analyticsEnabled = useAnalyticsConsent()
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger render={menuTriggerButton}>
@@ -100,13 +99,7 @@ function DesktopMenu() {
 					render={
 						<div className="flex w-full items-center justify-between gap-4">
 							Cookie analitici
-							<Switch
-								checked={analyticsEnabled}
-								onCheckedChange={(enabled) => {
-									setAnalyticsConsent(enabled)
-									setAnalyticsEnabled(enabled)
-								}}
-							/>
+							<Switch checked={analyticsEnabled} onCheckedChange={setAnalyticsConsent} />
 						</div>
 					}
 				/>
@@ -141,8 +134,7 @@ function DesktopMenu() {
 }
 
 function MobileMenu() {
-	const [analyticsEnabled, setAnalyticsEnabled] = useState(false)
-	useEffect(() => setAnalyticsEnabled(analyticsConsentGranted()), [])
+	const analyticsEnabled = useAnalyticsConsent()
 
 	return (
 		<Drawer>
@@ -156,13 +148,7 @@ function MobileMenu() {
 				<div className="flex flex-col gap-1 p-4 pt-2 pb-[max(env(safe-area-inset-bottom),1rem)]">
 					<div className="flex items-center justify-between gap-4 rounded-lg px-2 py-2.5 text-sm text-foreground hover:bg-muted">
 						Cookie analitici
-						<Switch
-							checked={analyticsEnabled}
-							onCheckedChange={(enabled) => {
-								setAnalyticsConsent(enabled)
-								setAnalyticsEnabled(enabled)
-							}}
-						/>
+						<Switch checked={analyticsEnabled} onCheckedChange={setAnalyticsConsent} />
 					</div>
 					{MENU_ENTRIES.map((entry) => {
 						const content = (

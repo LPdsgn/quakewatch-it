@@ -1,17 +1,24 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import * as CookieConsent from 'vanilla-cookieconsent'
 
 import { Button } from '@/components/ui/button'
 import { disableAnalytics, enableAnalytics } from '@/lib/analytics'
+import {
+	analyticsConsentGranted,
+	setAnalyticsConsentState,
+	subscribeAnalyticsConsent,
+} from '@/lib/analytics-consent'
 
-export function analyticsConsentGranted() {
-	return CookieConsent.acceptedCategory('analytics')
-}
+export { analyticsConsentGranted }
 
 export function setAnalyticsConsent(enabled: boolean) {
 	CookieConsent.acceptCategory(enabled ? 'analytics' : [], ['analytics'])
+}
+
+export function useAnalyticsConsent() {
+	return useSyncExternalStore(subscribeAnalyticsConsent, analyticsConsentGranted, () => false)
 }
 
 export function CookieConsentBanner() {
@@ -33,14 +40,20 @@ export function CookieConsentBanner() {
 				},
 			},
 			onConsent: ({ cookie }) => {
-				if (cookie.categories.includes('analytics')) enableAnalytics()
+				const enabled = cookie.categories.includes('analytics')
+				if (enabled) enableAnalytics()
+				else disableAnalytics()
+				setAnalyticsConsentState(enabled)
 				setVisible(false)
 			},
 			onChange: ({ cookie }) => {
-				if (cookie.categories.includes('analytics')) enableAnalytics()
+				const enabled = cookie.categories.includes('analytics')
+				if (enabled) enableAnalytics()
 				else disableAnalytics()
+				setAnalyticsConsentState(enabled)
 			},
 		})
+		setAnalyticsConsentState(CookieConsent.acceptedCategory('analytics'))
 		setVisible(!CookieConsent.validConsent())
 	}, [])
 
