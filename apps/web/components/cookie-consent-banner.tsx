@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { disableAnalytics, enableAnalytics } from '@/lib/analytics'
 import {
 	analyticsConsentGranted,
+	hydrateAnalyticsConsent,
 	setAnalyticsConsentState,
 	subscribeAnalyticsConsent,
 } from '@/lib/analytics-consent'
@@ -25,36 +26,38 @@ export function CookieConsentBanner() {
 	const [visible, setVisible] = useState(false)
 
 	useEffect(() => {
-		void CookieConsent.run({
-			categories: {
-				analytics: { enabled: false },
-			},
-			autoShow: false,
-			language: {
-				default: 'it',
-				translations: {
-					it: {
-						consentModal: {},
-						preferencesModal: { sections: [] },
+		void (async () => {
+			await CookieConsent.run({
+				categories: {
+					analytics: { enabled: false },
+				},
+				autoShow: false,
+				language: {
+					default: 'it',
+					translations: {
+						it: {
+							consentModal: {},
+							preferencesModal: { sections: [] },
+						},
 					},
 				},
-			},
-			onConsent: ({ cookie }) => {
-				const enabled = cookie.categories.includes('analytics')
-				if (enabled) enableAnalytics()
-				else disableAnalytics()
-				setAnalyticsConsentState(enabled)
-				setVisible(false)
-			},
-			onChange: ({ cookie }) => {
-				const enabled = cookie.categories.includes('analytics')
-				if (enabled) enableAnalytics()
-				else disableAnalytics()
-				setAnalyticsConsentState(enabled)
-			},
-		})
-		setAnalyticsConsentState(CookieConsent.acceptedCategory('analytics'))
-		setVisible(!CookieConsent.validConsent())
+				onConsent: ({ cookie }) => {
+					const enabled = cookie.categories.includes('analytics')
+					if (enabled) enableAnalytics()
+					else disableAnalytics()
+					setAnalyticsConsentState(enabled)
+					setVisible(false)
+				},
+				onChange: ({ cookie }) => {
+					const enabled = cookie.categories.includes('analytics')
+					if (enabled) enableAnalytics()
+					else disableAnalytics()
+					setAnalyticsConsentState(enabled)
+				},
+			})
+			await hydrateAnalyticsConsent(async () => CookieConsent.acceptedCategory('analytics'))
+			setVisible(!CookieConsent.validConsent())
+		})()
 	}, [])
 
 	if (!visible) return null

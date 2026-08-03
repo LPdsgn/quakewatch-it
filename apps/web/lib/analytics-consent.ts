@@ -10,6 +10,10 @@ export function setAnalyticsConsentState(enabled: boolean) {
 	listeners.forEach((listener) => listener())
 }
 
+export async function hydrateAnalyticsConsent(readConsent: () => Promise<boolean>) {
+	setAnalyticsConsentState(await readConsent())
+}
+
 export function subscribeAnalyticsConsent(listener: () => void) {
 	listeners.add(listener)
 	return () => listeners.delete(listener)
