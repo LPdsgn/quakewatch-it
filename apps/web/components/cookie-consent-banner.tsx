@@ -1,62 +1,74 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import * as CookieConsent from 'vanilla-cookieconsent'
 
+import { Button } from '@/components/ui/button'
 import { disableAnalytics, enableAnalytics } from '@/lib/analytics'
 
-export function showCookiePreferences() {
-	CookieConsent.showPreferences()
+export function analyticsConsentGranted() {
+	return CookieConsent.acceptedCategory('analytics')
+}
+
+export function setAnalyticsConsent(enabled: boolean) {
+	CookieConsent.acceptCategory(enabled ? 'analytics' : [], ['analytics'])
 }
 
 export function CookieConsentBanner() {
+	const [visible, setVisible] = useState(false)
+
 	useEffect(() => {
 		void CookieConsent.run({
 			categories: {
 				analytics: { enabled: false },
 			},
-			guiOptions: {
-				consentModal: { layout: 'box', position: 'bottom right' },
-				preferencesModal: { layout: 'box' },
-			},
+			autoShow: false,
 			language: {
 				default: 'it',
 				translations: {
 					it: {
-						consentModal: {
-							title: 'La tua privacy',
-							description:
-								'Usiamo cookie analitici facoltativi per capire come viene usata QuakeWatch.',
-							acceptAllBtn: 'Accetta',
-							acceptNecessaryBtn: 'Rifiuta',
-							showPreferencesBtn: 'Gestisci preferenze',
-						},
-						preferencesModal: {
-							title: 'Preferenze privacy',
-							acceptAllBtn: 'Accetta',
-							acceptNecessaryBtn: 'Rifiuta',
-							savePreferencesBtn: 'Salva preferenze',
-							sections: [
-								{
-									title: 'Cookie analitici',
-									description:
-										'Consentono statistiche d’uso anonime con PostHog. Puoi modificare questa scelta in qualunque momento.',
-									linkedCategory: 'analytics',
-								},
-							],
-						},
+						consentModal: {},
+						preferencesModal: { sections: [] },
 					},
 				},
 			},
 			onConsent: ({ cookie }) => {
 				if (cookie.categories.includes('analytics')) enableAnalytics()
+				setVisible(false)
 			},
 			onChange: ({ cookie }) => {
 				if (cookie.categories.includes('analytics')) enableAnalytics()
 				else disableAnalytics()
 			},
 		})
+		setVisible(!CookieConsent.validConsent())
 	}, [])
 
-	return null
+	if (!visible) return null
+
+	return (
+		<section
+			aria-label="Preferenze cookie"
+			className="fixed right-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-50 w-[calc(100%-1.5rem)] max-w-sm rounded-xl border border-border bg-popover p-4 text-popover-foreground shadow-lg sm:right-4"
+		>
+			<h2 className="text-sm font-semibold">Cookie analitici</h2>
+			<p className="mt-1 text-sm leading-5 text-muted-foreground">
+				Ci aiutano a capire come viene usata QuakeWatch. Sono facoltativi e puoi cambiare scelta
+				dal menu.
+			</p>
+			<div className="mt-4 flex gap-2">
+				<Button
+					type="button"
+					variant="outline"
+					className="flex-1"
+					onClick={() => setAnalyticsConsent(false)}
+				>
+					Rifiuta
+				</Button>
+				<Button type="button" className="flex-1" onClick={() => setAnalyticsConsent(true)}>
+					Accetta
+				</Button>
+			</div>
+		</section>
+	)
 }

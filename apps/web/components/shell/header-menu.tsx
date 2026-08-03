@@ -2,9 +2,9 @@
 
 import { EllipsisVertical, ExternalLink } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import type { ComponentType, SVGProps } from 'react'
+import { useEffect, useState, type ComponentType, type SVGProps } from 'react'
 
-import { showCookiePreferences } from '@/components/cookie-consent-banner'
+import { analyticsConsentGranted, setAnalyticsConsent } from '@/components/cookie-consent-banner'
 import { Button } from '@/components/ui/button'
 import {
 	Drawer,
@@ -24,6 +24,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Switch } from '@/components/ui/switch'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { capture } from '@/lib/analytics'
 import { parseAppState, serializeAppState, type Variant } from '@/lib/url-state'
@@ -77,6 +78,8 @@ function useVariantControl() {
 
 function DesktopMenu() {
 	const { variant, setVariant } = useVariantControl()
+	const [analyticsEnabled, setAnalyticsEnabled] = useState(false)
+	useEffect(() => setAnalyticsEnabled(analyticsConsentGranted()), [])
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger render={menuTriggerButton}>
@@ -93,7 +96,20 @@ function DesktopMenu() {
 					<DropdownMenuRadioItem value="detail-float">B · float</DropdownMenuRadioItem>
 				</DropdownMenuRadioGroup>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem onClick={showCookiePreferences}>Privacy e cookie</DropdownMenuItem>
+				<DropdownMenuItem
+					render={
+						<div className="flex w-full items-center justify-between gap-4">
+							Cookie analitici
+							<Switch
+								checked={analyticsEnabled}
+								onCheckedChange={(enabled) => {
+									setAnalyticsConsent(enabled)
+									setAnalyticsEnabled(enabled)
+								}}
+							/>
+						</div>
+					}
+				/>
 				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
 					<DropdownMenuLabel>Crediti</DropdownMenuLabel>
@@ -125,6 +141,9 @@ function DesktopMenu() {
 }
 
 function MobileMenu() {
+	const [analyticsEnabled, setAnalyticsEnabled] = useState(false)
+	useEffect(() => setAnalyticsEnabled(analyticsConsentGranted()), [])
+
 	return (
 		<Drawer>
 			<DrawerTrigger render={menuTriggerButton}>
@@ -135,13 +154,16 @@ function MobileMenu() {
 					<DrawerTitle>Opzioni</DrawerTitle>
 				</DrawerHeader>
 				<div className="flex flex-col gap-1 p-4 pt-2 pb-[max(env(safe-area-inset-bottom),1rem)]">
-					<button
-						type="button"
-						onClick={showCookiePreferences}
-						className="flex items-center gap-2 rounded-lg px-2 py-2.5 text-left text-sm text-foreground hover:bg-muted"
-					>
-						Privacy e cookie
-					</button>
+					<div className="flex items-center justify-between gap-4 rounded-lg px-2 py-2.5 text-sm text-foreground hover:bg-muted">
+						Cookie analitici
+						<Switch
+							checked={analyticsEnabled}
+							onCheckedChange={(enabled) => {
+								setAnalyticsConsent(enabled)
+								setAnalyticsEnabled(enabled)
+							}}
+						/>
+					</div>
 					{MENU_ENTRIES.map((entry) => {
 						const content = (
 							<>
