@@ -19,3 +19,15 @@ pre-commit:
          # pre-commit. Va lanciato a mano o in CI (vedi Parte B del task lint2).
          run: pnpm exec oxlint --no-error-on-unmatched-pattern {staged_files} && pnpm exec oxfmt --write --no-error-on-unmatched-pattern {staged_files}
          stage_fixed: true
+
+# pre-push: check lenti su tutto il progetto (non solo staged). Il pre-commit
+# gestisce oxlint/oxfmt sui file stagged; typecheck e lint:types (type-aware)
+# richiedono un passaggio su tutto il progetto e non ci stavano. Girano qui
+# prima del push. La CI resta il gate autoritativo: --no-verify bypassa l'hook.
+pre-push:
+   parallel: true
+   commands:
+      typecheck:
+         run: pnpm typecheck
+      lint-types:
+         run: pnpm lint:types
