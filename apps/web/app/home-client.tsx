@@ -264,9 +264,16 @@ export function HomeClient() {
 	const isMobile = useIsMobile()
 
 	// Padding per flyTo su mobile: centra il marker nell'area visibile tra overlay top e drawer HALF.
-	const flyToPadding = isMobile
-		? { top: MOBILE_TOP_BAR_HEIGHT, bottom: Math.round(sheetSnap * window.innerHeight) }
-		: undefined
+	// useMemo: l'oggetto deve essere referenzialmente stabile — flyToPadding è nella dependency
+	// array dell'effect flyTo in quake-map.tsx e un nuovo oggetto a ogni render (es. tick clock)
+	// farebbe ripartire il flyTo anche durante pan/zoom manuale.
+	const flyToPadding = useMemo(
+		() =>
+			isMobile
+				? { top: MOBILE_TOP_BAR_HEIGHT, bottom: Math.round(sheetSnap * window.innerHeight) }
+				: undefined,
+		[isMobile, sheetSnap]
+	)
 
 	return (
 		<div className="grid h-dvh w-screen grid-cols-1 grid-rows-1 bg-background text-foreground md:grid-cols-[360px_1fr] md:grid-rows-[1fr_fit-content(100%)]">
