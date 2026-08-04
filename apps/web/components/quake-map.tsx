@@ -7,6 +7,7 @@ import {
 	SEMANTIC_TOKENS,
 	buildMapStyle,
 	magnitudeClassOf,
+	type Basemap,
 	type ThemeName,
 } from '@quakewatch/tokens'
 import type { StyleSpecification } from 'maplibre-gl'
@@ -16,6 +17,7 @@ import { type Ref, useEffect, useImperativeHandle, useMemo, useRef, useState } f
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { Layer, Map, Source, type MapRef } from 'react-map-gl/maplibre'
 
+import { usePersistentPref } from '@/hooks/use-persistent-pref'
 import { toThemeName } from '@/lib/theme'
 import { timeFilterExpression } from '@/lib/timeline'
 
@@ -75,11 +77,13 @@ export function QuakeMap({
 	useEffect(() => setMounted(true), [])
 	const themeName: ThemeName = mounted ? toThemeName(resolvedTheme) : 'theme-dark'
 
+	const [basemap] = usePersistentPref<Basemap>('basemap', 'minimal')
+
 	// buildMapStyle ha un tipo MapStyle "leggero" (per non far dipendere @quakewatch/tokens da
 	// maplibre-gl): stessa forma dello style MapLibre reale, cast esplicito verso il tipo atteso.
 	const mapStyle = useMemo(
-		() => buildMapStyle(themeName) as unknown as StyleSpecification,
-		[themeName]
+		() => buildMapStyle(themeName, basemap) as unknown as StyleSpecification,
+		[themeName, basemap]
 	)
 	const foregroundColor = SEMANTIC_TOKENS[themeName].foreground as string
 	const magnitudeColors = MAGNITUDE_COLORS[themeName]
@@ -227,7 +231,13 @@ export function QuakeMap({
 			cursor={hovering ? 'pointer' : undefined}
 			// Aggiunge l'attribuzione INGV a quella dei tile (non la sostituisce): deve restare
 			// visibile in ogni snap state mobile, incluso PEEK (vincolo non negoziabile).
-			attributionControl={{ customAttribution: 'Dati INGV — Osservatorio Nazionale Terremoti' }}
+			// Quando terrain è attivo, include anche l'attribuzione SRTM.
+			attributionControl={{
+				customAttribution:
+					basemap === 'terrain'
+						? 'Dati INGV — Osservatorio Nazionale Terremoti | SRTM — AWS Terrarium'
+						: 'Dati INGV — Osservatorio Nazionale Terremoti',
+			}}
 			onMouseEnter={() => setHovering(true)}
 			onMouseLeave={() => setHovering(false)}
 			onClick={(e) => {

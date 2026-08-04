@@ -41,6 +41,11 @@ export const MAP_DARK = {
 	water: 'hsl(0 0% 4%)',
 	boundaryCountry: 'rgba(255,255,255,0.28)',
 	boundaryRegion: 'rgba(255,255,255,0.10)',
+	/** Province (admin_level 6) — tra regioni e stati per gerarchia visiva. */
+	boundaryProvince: 'rgba(255,255,255,0.18)',
+	/** Label città: `name:it` con fallback `name`. Halo scuro per leggibilità su land. */
+	placeLabel: 'rgba(255,255,255,0.42)',
+	placeHalo: 'rgba(0,0,0,0.55)',
 } as const
 
 export const MAP_LIGHT = {
@@ -48,4 +53,7 @@ export const MAP_LIGHT = {
 	water: 'hsl(0 0% 85%)',
 	boundaryCountry: 'rgba(0,0,0,0.35)',
 	boundaryRegion: 'rgba(0,0,0,0.12)',
+	boundaryProvince: 'rgba(0,0,0,0.22)',
+	placeLabel: 'rgba(0,0,0,0.42)',
+	placeHalo: 'rgba(255,255,255,0.55)',
 } as const

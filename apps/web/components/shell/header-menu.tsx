@@ -1,5 +1,6 @@
 'use client'
 
+import type { Basemap } from '@quakewatch/tokens'
 import { EllipsisVertical, ExternalLink } from 'lucide-react'
 import type { ComponentType, SVGProps } from 'react'
 
@@ -41,6 +42,12 @@ interface MenuEntry {
 
 const MENU_ENTRIES: MenuEntry[] = [{ label: 'Dati INGV', icon: ExternalLink, href: INGV_URL }]
 
+const BASEMAP_LABELS: Record<Basemap, string> = {
+	minimal: 'Minimale',
+	stradale: 'Stradale',
+	terrain: 'Terreno',
+}
+
 /**
  * Menu opzioni dell'header: dropdown su desktop, drawer modale su mobile.
  * Il primo render (useIsMobile non ancora assestato) mostra la variante desktop
@@ -72,6 +79,7 @@ function useVariantControl() {
 
 function DesktopMenu() {
 	const { variant, setVariant } = useVariantControl()
+	const [basemap, setBasemap] = usePersistentPref<Basemap>('basemap', 'minimal')
 	const analyticsEnabled = useAnalyticsConsent()
 	return (
 		<DropdownMenu>
@@ -87,6 +95,16 @@ function DesktopMenu() {
 					<DropdownMenuLabel>Dettaglio evento</DropdownMenuLabel>
 					<DropdownMenuRadioItem value="default">A · sidebar</DropdownMenuRadioItem>
 					<DropdownMenuRadioItem value="detail-float">B · float</DropdownMenuRadioItem>
+				</DropdownMenuRadioGroup>
+				<DropdownMenuSeparator />
+				<DropdownMenuRadioGroup
+					value={basemap}
+					onValueChange={(next) => setBasemap(next as Basemap)}
+				>
+					<DropdownMenuLabel>Stile mappa</DropdownMenuLabel>
+					<DropdownMenuRadioItem value="minimal">Minimale</DropdownMenuRadioItem>
+					<DropdownMenuRadioItem value="stradale">Stradale</DropdownMenuRadioItem>
+					<DropdownMenuRadioItem value="terrain">Terreno</DropdownMenuRadioItem>
 				</DropdownMenuRadioGroup>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem
@@ -131,6 +149,7 @@ function DesktopMenu() {
 }
 
 function MobileMenu() {
+	const [basemap, setBasemap] = usePersistentPref<Basemap>('basemap', 'minimal')
 	const analyticsEnabled = useAnalyticsConsent()
 
 	return (
@@ -143,6 +162,24 @@ function MobileMenu() {
 					<DrawerTitle>Opzioni</DrawerTitle>
 				</DrawerHeader>
 				<div className="flex flex-col gap-1 p-4 pt-2 pb-[max(env(safe-area-inset-bottom),1rem)]">
+					<div className="flex flex-col gap-0.5">
+						<span className="px-2 text-xs font-semibold text-muted-foreground">
+							Stile mappa
+						</span>
+						{Object.entries(BASEMAP_LABELS).map(([value, label]) => (
+							<button
+								key={value}
+								type="button"
+								onClick={() => setBasemap(value as Basemap)}
+								className="flex items-center gap-2 rounded-lg px-2 py-2.5 text-sm text-foreground hover:bg-muted"
+							>
+								<span
+									className={`size-3 rounded-full border-2 ${basemap === value ? 'border-primary bg-primary' : 'border-muted-foreground/40'}`}
+								/>
+								{label}
+							</button>
+						))}
+					</div>
 					<div className="flex items-center justify-between gap-4 rounded-lg px-2 py-2.5 text-sm text-foreground hover:bg-muted">
 						Cookie analitici
 						<Switch checked={analyticsEnabled} onCheckedChange={setAnalyticsConsent} />
