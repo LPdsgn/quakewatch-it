@@ -47,8 +47,8 @@ export function TabbedControl<T extends string>({
 					onClick={() => onChange(option.value)}
 					className={cn(
 						// Sottoinsieme delle classi di TabsTrigger (tabs.tsx) che non dipende dal Root.
-						'inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center rounded-sm border border-transparent px-1.5 py-0.5 font-medium whitespace-nowrap text-foreground/60 transition-all hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:text-muted-foreground dark:hover:text-foreground',
-						'data-active:bg-background data-active:text-foreground data-active:shadow-sm dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground',
+						'inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center rounded-sm border border-transparent px-1.5 py-0.5 font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 text-muted-foreground not-data-active:hover:text-foreground',
+						'data-active:bg-foreground data-active:text-background data-active:shadow-sm data-active:font-semibold',
 						triggerClassName
 					)}
 				>

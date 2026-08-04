@@ -28,6 +28,8 @@ export interface MobileSheetProps {
 	onSnapPointChange: (snapPoint: number) => void
 	onSelectEvent: (eventId: string) => void
 	onAreaWindowChange: (area: string, window: TimeWindow) => void
+	feltFilter: 'all' | 'felt'
+	onFeltFilterChange: (value: 'all' | 'felt') => void
 }
 
 /**
@@ -45,6 +47,8 @@ export function MobileSheet({
 	onSnapPointChange,
 	onSelectEvent,
 	onAreaWindowChange,
+	feltFilter,
+	onFeltFilterChange,
 }: MobileSheetProps) {
 	// PEEK: solo filtri geo/tempo — niente riepilogo (i chip vivono già nell'overlay in alto)
 	// né ultimo evento (valutato e scartato a video, 2026-08-02).
@@ -53,7 +57,15 @@ export function MobileSheet({
 	if (eventId !== null) {
 		body = listSlot
 	} else if (snapPoint === SHEET_PEEK) {
-		body = <AreaPreset area={area} window={window} onChange={onAreaWindowChange} />
+		body = (
+			<AreaPreset
+				area={area}
+				window={window}
+				onChange={onAreaWindowChange}
+				feltFilter={feltFilter}
+				onFeltFilterChange={onFeltFilterChange}
+			/>
+		)
 	} else {
 		body = (
 			<>
@@ -64,7 +76,13 @@ export function MobileSheet({
 					nowMs={nowMs}
 					defaultOpen={false}
 				/>
-				<AreaPreset area={area} window={window} onChange={onAreaWindowChange} />
+				<AreaPreset
+					area={area}
+					window={window}
+					onChange={onAreaWindowChange}
+					feltFilter={feltFilter}
+					onFeltFilterChange={onFeltFilterChange}
+				/>
 				{listSlot}
 				<SideFooter />
 			</>

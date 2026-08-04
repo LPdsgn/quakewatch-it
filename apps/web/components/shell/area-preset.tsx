@@ -40,7 +40,7 @@ export function AreaPreset({
 	area,
 	window,
 	onChange,
-	feltFilter = 'all',
+	feltFilter = 'felt',
 	onFeltFilterChange = noop,
 }: AreaPresetProps) {
 	return (
@@ -54,20 +54,20 @@ export function AreaPreset({
 				triggerClassName="text-[10px] tracking-wide uppercase"
 			/>
 			<div className="flex items-center justify-between gap-2">
-				<div>
+				<div className="flex items-center gap-2">
 					<TabbedControl
 						aria-label="Filtro percepibilità"
 						value={feltFilter}
 						options={[
-							{ value: 'all', label: 'Tutti' },
 							{
 								value: 'felt',
 								label: 'Percepiti',
 							},
+							{ value: 'all', label: 'Tutti' },
 						]}
 						onChange={(next) => onFeltFilterChange(next as 'all' | 'felt')}
-						className="flex w-auto"
-						triggerClassName="text-[10px] tracking-wide"
+						className="flex w-auto h-7"
+						triggerClassName="text-[10px]"
 					/>
 					<Tooltip>
 						<TooltipTrigger className="cursor-default">
@@ -77,7 +77,7 @@ export function AreaPreset({
 					</Tooltip>
 				</div>
 				<div className="flex items-center gap-2">
-					<span className="text-[10px] text-muted-foreground">
+					<span className="text-[10px] text-muted-foreground text-right line-clamp-1">
 						{WINDOW_DESCRIPTION[window]}
 					</span>
 					<ButtonGroup aria-label="Finestra temporale">
@@ -90,8 +90,9 @@ export function AreaPreset({
 								aria-pressed={window === w}
 								onClick={() => onChange(area, w)}
 								className={cn(
-									'font-mono text-[10px]',
-									window === w ? 'bg-muted text-foreground' : 'text-muted-foreground'
+									'font-mono text-[10px] h-7',
+									window === w ? 'bg-muted text-foreground' : 'text-muted-foreground',
+									'aria-pressed:bg-foreground aria-pressed:text-background aria-pressed:hover:bg-foreground aria-pressed:hover:text-background'
 								)}
 								data-numeric
 							>

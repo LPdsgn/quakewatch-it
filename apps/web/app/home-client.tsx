@@ -51,7 +51,7 @@ export function HomeClient() {
 	// variant è una preferenza (localStorage), non più view state in URL (AGENTS.md).
 	const [variant] = usePersistentPref<Variant>('variant', 'default')
 
-	const [feltFilter, setFeltFilter] = usePersistentPref<'all' | 'felt'>('feltFilter', 'all')
+	const [feltFilter, setFeltFilter] = usePersistentPref<'all' | 'felt'>('feltFilter', 'felt')
 
 	// Ultimo evento selezionato prima di "indietro": ripristina il focus lì in EventList (a11y).
 	// Ref, non state — non deve causare un re-render, solo essere letto al prossimo render
@@ -312,7 +312,7 @@ export function HomeClient() {
 					/>
 					<Timeline
 						compact
-						events={events}
+						events={visibleEvents}
 						window={state.window}
 						tMs={tMs}
 						nowMs={nowMs}
@@ -331,7 +331,7 @@ export function HomeClient() {
 					<CookieConsentBanner className="fixed! top-2.5 right-2.5 z-9999 max-w-sm" />
 				)}
 				<QuakeMap
-					events={events}
+					events={visibleEvents}
 					selectedId={state.event}
 					onSelect={handleSelectEvent}
 					isLive={isLive}
@@ -348,7 +348,7 @@ export function HomeClient() {
 			{/* Timeline: solo desktop (Piano 4 T5). Variante mobile compact: Piano 4 T6. */}
 			<div className="hidden overflow-x-clip border-t border-border md:col-start-2 md:row-start-2 md:flex py-2.5">
 				<Timeline
-					events={events}
+					events={visibleEvents}
 					window={state.window}
 					tMs={tMs}
 					nowMs={nowMs}
@@ -370,6 +370,8 @@ export function HomeClient() {
 				onSnapPointChange={setSheetSnap}
 				onSelectEvent={handleSelectEvent}
 				onAreaWindowChange={handleAreaWindowChange}
+				feltFilter={feltFilter}
+				onFeltFilterChange={setFeltFilter}
 			/>
 		</div>
 	)

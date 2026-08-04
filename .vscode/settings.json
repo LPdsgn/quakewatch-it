@@ -2,5 +2,8 @@
 	"editor.defaultFormatter": "oxc.oxc-vscode",
 	"editor.insertSpaces": false,
 	"editor.tabSize": 3,
-	"editor.detectIndentation": true
+	"editor.detectIndentation": true,
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "oxc.oxc-vscode"
+	}
 }
