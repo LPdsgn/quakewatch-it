@@ -32,3 +32,14 @@ export function isShakemapContours(json: unknown): json is ShakemapContours {
 		return typeof value === 'number' && typeof color === 'string'
 	})
 }
+
+/** Stima MMI epicentrale (D=0) — Atkinson & Wald 2007, coefficienti approssimati. */
+export function estimateEpicentralMMI(magnitude: number, depthKm: number): number {
+	const R = Math.max(depthKm, 1)
+	return 3.23 + 1.18 * magnitude - 2.44 * Math.log10(R)
+}
+
+/** Soglia di percepibilità: MMI ≥ III. */
+export function isFelt(magnitude: number, depthKm: number): boolean {
+	return estimateEpicentralMMI(magnitude, depthKm) >= 3.0
+}
