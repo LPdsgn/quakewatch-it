@@ -1,8 +1,10 @@
 import { AREA_PRESETS, TIME_WINDOWS, type TimeWindow } from '@quakewatch/core'
+import { CircleQuestionMark } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
 import { TabbedControl } from '@/components/ui/tabbed-control'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 const WINDOW_LABEL: Record<TimeWindow, string> = {
@@ -19,10 +21,14 @@ const WINDOW_DESCRIPTION: Record<TimeWindow, string> = {
 	'90d': 'Ultimi 90 giorni',
 }
 
+const noop = () => {}
+
 export interface AreaPresetProps {
 	area: string
 	window: TimeWindow
 	onChange: (area: string, window: TimeWindow) => void
+	feltFilter?: 'all' | 'felt'
+	onFeltFilterChange?: (value: 'all' | 'felt') => void
 }
 
 /**
@@ -30,7 +36,13 @@ export interface AreaPresetProps {
  * su ButtonGroup nella riga sotto, allineati a destra con la label contestuale della
  * finestra selezionata accanto.
  */
-export function AreaPreset({ area, window, onChange }: AreaPresetProps) {
+export function AreaPreset({
+	area,
+	window,
+	onChange,
+	feltFilter = 'all',
+	onFeltFilterChange = noop,
+}: AreaPresetProps) {
 	return (
 		<div className="flex flex-col gap-2 rounded-xl border border-border bg-card p-2">
 			<TabbedControl
@@ -41,27 +53,53 @@ export function AreaPreset({ area, window, onChange }: AreaPresetProps) {
 				className="flex w-full"
 				triggerClassName="text-[10px] tracking-wide uppercase"
 			/>
-			<div className="flex items-center justify-end gap-2">
-				<span className="text-[10px] text-muted-foreground">{WINDOW_DESCRIPTION[window]}</span>
-				<ButtonGroup aria-label="Finestra temporale">
-					{TIME_WINDOWS.map((w) => (
-						<Button
-							key={w}
-							type="button"
-							variant="outline"
-							size="xs"
-							aria-pressed={window === w}
-							onClick={() => onChange(area, w)}
-							className={cn(
-								'font-mono text-[10px]',
-								window === w ? 'bg-muted text-foreground' : 'text-muted-foreground'
-							)}
-							data-numeric
-						>
-							{WINDOW_LABEL[w]}
-						</Button>
-					))}
-				</ButtonGroup>
+			<div className="flex items-center justify-between gap-2">
+				<div>
+					<TabbedControl
+						aria-label="Filtro percepibilità"
+						value={feltFilter}
+						options={[
+							{ value: 'all', label: 'Tutti' },
+							{
+								value: 'felt',
+								label: 'Percepiti',
+							},
+						]}
+						onChange={(next) => onFeltFilterChange(next as 'all' | 'felt')}
+						className="flex w-auto"
+						triggerClassName="text-[10px] tracking-wide"
+					/>
+					<Tooltip>
+						<TooltipTrigger className="cursor-default">
+							<CircleQuestionMark className="size-3" />
+						</TooltipTrigger>
+						<TooltipContent>Stima basata su modello IPE internazionale</TooltipContent>
+					</Tooltip>
+				</div>
+				<div className="flex items-center gap-2">
+					<span className="text-[10px] text-muted-foreground">
+						{WINDOW_DESCRIPTION[window]}
+					</span>
+					<ButtonGroup aria-label="Finestra temporale">
+						{TIME_WINDOWS.map((w) => (
+							<Button
+								key={w}
+								type="button"
+								variant="outline"
+								size="xs"
+								aria-pressed={window === w}
+								onClick={() => onChange(area, w)}
+								className={cn(
+									'font-mono text-[10px]',
+									window === w ? 'bg-muted text-foreground' : 'text-muted-foreground'
+								)}
+								data-numeric
+							>
+								{WINDOW_LABEL[w]}
+							</Button>
+						))}
+					</ButtonGroup>
+				</div>
 			</div>
 		</div>
 	)

@@ -86,3 +86,16 @@ describe('subscribe + notify', () => {
 		expect(calls).toBe(0)
 	})
 })
+
+describe('feltFilter preference', () => {
+	it('feltFilter default "all"', () => {
+		const s = makeStorage()
+		expect(readPref('feltFilter', 'all', s)).toBe('all')
+	})
+
+	it('feltFilter roundtrip write→read', () => {
+		const s = makeStorage()
+		writePref('feltFilter', 'felt', s)
+		expect(readPref('feltFilter', 'all', s)).toBe('felt')
+	})
+})
