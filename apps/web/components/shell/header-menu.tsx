@@ -102,9 +102,11 @@ function DesktopMenu() {
 					onValueChange={(next) => setBasemap(next as Basemap)}
 				>
 					<DropdownMenuLabel>Stile mappa</DropdownMenuLabel>
-					<DropdownMenuRadioItem value="minimal">Minimale</DropdownMenuRadioItem>
-					<DropdownMenuRadioItem value="stradale">Stradale</DropdownMenuRadioItem>
-					<DropdownMenuRadioItem value="terrain">Terreno</DropdownMenuRadioItem>
+					{Object.entries(BASEMAP_LABELS).map(([value, label]) => (
+						<DropdownMenuRadioItem key={value} value={value}>
+							{label}
+						</DropdownMenuRadioItem>
+					))}
 				</DropdownMenuRadioGroup>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem

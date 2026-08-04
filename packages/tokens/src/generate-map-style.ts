@@ -38,7 +38,7 @@ const TERRARIUM_URL = 'https://elevation-tiles-prod.s3.amazonaws.com/terrarium/{
 export function buildMapStyle(theme: ThemeName, basemap: Basemap = 'minimal'): MapStyle {
 	const c = theme === 'theme-dark' ? MAP_DARK : MAP_LIGHT
 
-	const showLabels = basemap !== 'minimal'
+	const showEnhanced = basemap !== 'minimal'
 	const showTerrain = basemap === 'terrain'
 
 	const style: MapStyle = {
@@ -106,7 +106,7 @@ export function buildMapStyle(theme: ThemeName, basemap: Basemap = 'minimal'): M
 	)
 
 	// Province (admin_level 6): dashate per distinguerle da regioni. Solo stradale/terrain.
-	if (showLabels) {
+	if (showEnhanced) {
 		style.layers.push({
 			id: 'boundary-province',
 			type: 'line',
@@ -123,7 +123,7 @@ export function buildMapStyle(theme: ThemeName, basemap: Basemap = 'minimal'): M
 	}
 
 	// Label città (name:it con fallback name). Solo stradale/terrain.
-	if (showLabels) {
+	if (showEnhanced) {
 		style.layers.push(
 			{
 				id: 'place-city',

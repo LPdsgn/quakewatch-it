@@ -112,6 +112,7 @@ Drawer/Sheet, Tabs (finestre), ScrollArea (lista), Badge, Tooltip, Sonner (toast
 - Display **seven-segment** per i numeri del riepilogo
 - Un solo accento (rosso) usato con disciplina: voce attiva, cursore timeline, eventi recenti/selezionati, LIVE
 - Mappa monocroma custom: terra quasi-nera (dark) / carta chiara (light), confini e label sommessi, zero POI
+  - **Derogato 2026-08-05**: aggiunte varianti basemap opzionali (`stradale` con province + label città, `terrain` con hillshade DEM) selezionabili da menu header. La variante default `minimale` mantiene il vincolo originale. Vedi `packages/tokens/src/generate-map-style.ts` e commit `5275e5e`.
 - Tweakpane rimappato sui token via `--tp-*` in entrambi i temi
 - Motion sobrio e strumentale, implementato con **anime.js v4** (import selettivi ESM; `createScope` con `mediaQueries` per `prefers-reduced-motion` e breakpoint; cleanup via `revert()` in un hook React interno); nessun effetto drammatizzante. Framer-motion e GSAP esclusi: eventuali componenti terzi che li usano vanno migrati o scartati
 
