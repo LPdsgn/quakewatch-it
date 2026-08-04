@@ -1,6 +1,6 @@
 'use client'
 
-import { useEventsQuery, WINDOW_CONFIG, type TimeWindow } from '@quakewatch/core'
+import { isFelt, useEventsQuery, WINDOW_CONFIG, type TimeWindow } from '@quakewatch/core'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
@@ -51,6 +51,8 @@ export function HomeClient() {
 	// variant è una preferenza (localStorage), non più view state in URL (AGENTS.md).
 	const [variant] = usePersistentPref<Variant>('variant', 'default')
 
+	const [feltFilter, setFeltFilter] = usePersistentPref<'all' | 'felt'>('feltFilter', 'all')
+
 	// Ultimo evento selezionato prima di "indietro": ripristina il focus lì in EventList (a11y).
 	// Ref, non state — non deve causare un re-render, solo essere letto al prossimo render
 	// già innescato dal cambio di stato.event via router.replace.
@@ -88,10 +90,13 @@ export function HomeClient() {
 	const tMs = state.t !== null ? state.t * 1000 : null
 
 	// Snapshot per lista/riepilogo/più-forti (la mappa NON usa questo: filtra via expression)
-	const visibleEvents = useMemo(
-		() => (tMs !== null ? events.filter((e) => new Date(e.time).getTime() <= tMs) : events),
-		[events, tMs]
-	)
+	const visibleEvents = useMemo(() => {
+		const timeFiltered =
+			tMs !== null ? events.filter((e) => new Date(e.time).getTime() <= tMs) : events
+		return feltFilter === 'felt'
+			? timeFiltered.filter((e) => isFelt(e.magnitude, e.depthKm))
+			: timeFiltered
+	}, [events, tMs, feltFilter])
 
 	// isLive: pulse/affordance live solo su 24h E sul presente
 	const isLive = state.window === '24h' && state.t === null
@@ -183,9 +188,14 @@ export function HomeClient() {
 	}
 
 	const threshold = WINDOW_CONFIG[state.window].minMagnitude
-	const emptyLabel = threshold
-		? `Nessun evento M≥${threshold} ${WINDOW_TEXT[state.window]}`
-		: `Nessun evento ${WINDOW_TEXT[state.window]}`
+	let emptyLabel: string
+	if (feltFilter === 'felt') {
+		emptyLabel = 'Nessun evento percepito'
+	} else if (threshold) {
+		emptyLabel = `Nessun evento M≥${threshold} ${WINDOW_TEXT[state.window]}`
+	} else {
+		emptyLabel = `Nessun evento ${WINDOW_TEXT[state.window]}`
+	}
 
 	// Contenuto lista (loading/errore/vuoto/lista): indipendente dalla selezione, serve da solo
 	// per la sidebar desktop in variante B (T6) dove il dettaglio flotta sulla mappa e la lista
@@ -219,6 +229,7 @@ export function HomeClient() {
 				onSelect={handleSelectEvent}
 				nowMs={nowMs}
 				restoreFocusId={lastClearedIdRef.current}
+				isFelt={(e) => isFelt(e.magnitude, e.depthKm)}
 			/>
 		)
 	}
@@ -270,7 +281,13 @@ export function HomeClient() {
 					onSelect={handleSelectEvent}
 					nowMs={nowMs}
 				/>
-				<AreaPreset area={state.area} window={state.window} onChange={handleAreaWindowChange} />
+				<AreaPreset
+					area={state.area}
+					window={state.window}
+					onChange={handleAreaWindowChange}
+					feltFilter={feltFilter}
+					onFeltFilterChange={setFeltFilter}
+				/>
 				{sidebarSlot}
 				<SideFooter />
 			</div>
