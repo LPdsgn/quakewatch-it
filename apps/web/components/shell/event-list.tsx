@@ -13,9 +13,18 @@ export interface EventListProps {
 	nowMs: number | null
 	/** Id dell'evento selezionato prima dell'ultimo "indietro": ripristina il focus lì (a11y). */
 	restoreFocusId?: string | null
+	/** Callback opzionale per attenuare eventi non percepibili. Se assente, nessuna attenuazione. */
+	isFelt?: (event: Earthquake) => boolean
 }
 
-export function EventList({ events, selectedId, onSelect, nowMs, restoreFocusId }: EventListProps) {
+export function EventList({
+	events,
+	selectedId,
+	onSelect,
+	nowMs,
+	restoreFocusId,
+	isFelt,
+}: EventListProps) {
 	const sorted = events.toSorted((a, b) => b.time.localeCompare(a.time))
 	const mostRecentId = sorted[0]?.eventId ?? null
 
@@ -34,6 +43,7 @@ export function EventList({ events, selectedId, onSelect, nowMs, restoreFocusId 
 				{sorted.map((event) => {
 					const isSelected = event.eventId === selectedId
 					const isAccent = isSelected || event.eventId === mostRecentId
+					const felt = isFelt ? isFelt(event) : true
 					return (
 						<button
 							key={event.eventId}
@@ -48,7 +58,8 @@ export function EventList({ events, selectedId, onSelect, nowMs, restoreFocusId 
 							onClick={() => onSelect(event.eventId)}
 							className={cn(
 								'flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-muted',
-								isSelected && 'bg-muted'
+								isSelected && 'bg-muted',
+								!felt && 'opacity-60'
 							)}
 						>
 							<span
