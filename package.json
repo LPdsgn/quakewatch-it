@@ -1,6 +1,16 @@
 {
 	"name": "quakewatch-it",
-	"private": true,
+	"private": false,
+	"description": "Monitoraggio sismico in Italia basato sui Web Services FDSN dell'INGV",
+	"keywords": ["terremoti", "sismico", "INGV", "monitoraggio", "Italia", "FDSN", "earthquake", "seismic"],
+	"homepage": "",
+	"bugs": {
+		"url": "https://github.com/lpdsgn/quakewatch-it/issues",
+		"email": "86961265+LPdsgn@users.noreply.github.com"
+	},
+	"license": "Apache-2.0",
+	"author": "Luigi Pedata <86961265+LPdsgn@users.noreply.github.com> (https://lpdsgn.it/)",
+	"repository": "github:lpdsgn/quakewatch-it",
 	"type": "module",
 	"scripts": {
 		"dev:web": "pnpm --filter web dev",
