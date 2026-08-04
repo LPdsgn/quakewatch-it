@@ -1,7 +1,6 @@
 'use client'
 
 import { EllipsisVertical, ExternalLink } from 'lucide-react'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import type { ComponentType, SVGProps } from 'react'
 
 import { setAnalyticsConsent, useAnalyticsConsent } from '@/components/cookie-consent-banner'
@@ -26,8 +25,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Switch } from '@/components/ui/switch'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { usePersistentPref } from '@/hooks/use-persistent-pref'
 import { capture } from '@/lib/analytics'
-import { parseAppState, serializeAppState, type Variant } from '@/lib/url-state'
+import { type Variant } from '@/lib/url-state'
 
 const INGV_URL = 'https://terremoti.ingv.it'
 
@@ -61,19 +61,13 @@ const menuTriggerButton = (
 )
 
 /**
- * Il controllo variante legge/scrive lo stato URL da sé (stesso pattern degli handler di
- * home-client): evita di far transitare le prop per Header, montato due volte.
+ * Il controllo variante legge/scrive la preferenza da localStorage (non più URL):
+ * è una preferenza, non una view (AGENTS.md — Scelte chiuse). Sync cross-component
+ * via usePersistentPref (header-menu + home-client condividono la stessa key).
  */
 function useVariantControl() {
-	const router = useRouter()
-	const pathname = usePathname()
-	const searchParams = useSearchParams()
-	const state = parseAppState(searchParams)
-	const setVariant = (variant: Variant) => {
-		const qs = serializeAppState({ ...state, variant })
-		router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
-	}
-	return { variant: state.variant, setVariant }
+	const [variant, setVariant] = usePersistentPref<Variant>('variant', 'default')
+	return { variant, setVariant }
 }
 
 function DesktopMenu() {

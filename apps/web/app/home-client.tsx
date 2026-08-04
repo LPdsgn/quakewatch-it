@@ -19,10 +19,11 @@ import { Summary } from '@/components/shell/summary'
 import { Timeline } from '@/components/timeline'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { usePersistentPref } from '@/hooks/use-persistent-pref'
 import { capture } from '@/lib/analytics'
 import { SHEET_HALF, SHEET_PEEK } from '@/lib/layout-constants'
 import { clampT, shouldDeselect } from '@/lib/timeline'
-import { parseAppState, serializeAppState } from '@/lib/url-state'
+import { parseAppState, serializeAppState, type Variant } from '@/lib/url-state'
 
 // Verdetto A/B 2026-08-02: vince B (float). La variante A resta raggiungibile e il suo
 // controllo ora vive nel menu dell'header (header-menu.tsx, sezione "Dettaglio evento") —
@@ -46,6 +47,9 @@ export function HomeClient() {
 	// nuovo array a ogni render finché `data` è undefined, invalidando a cascata visibleEvents
 	// sotto e gli effect che dipendono da `events`.
 	const events = useMemo(() => data?.events ?? [], [data])
+
+	// variant è una preferenza (localStorage), non più view state in URL (AGENTS.md).
+	const [variant] = usePersistentPref<Variant>('variant', 'default')
 
 	// Ultimo evento selezionato prima di "indietro": ripristina il focus lì in EventList (a11y).
 	// Ref, non state — non deve causare un re-render, solo essere letto al prossimo render
@@ -244,7 +248,7 @@ export function HomeClient() {
 
 	// sidebarSlot: solo per la colonna sidebar desktop. In variante B il dettaglio flotta sulla
 	// mappa (vedi EventDetailFloat sotto) invece di sostituire la lista qui.
-	const sidebarSlot = state.variant === 'detail-float' ? listContent : listSlot
+	const sidebarSlot = variant === 'detail-float' ? listContent : listSlot
 
 	const isMobile = useIsMobile()
 
@@ -319,7 +323,7 @@ export function HomeClient() {
 					handleRef={mapHandleRef}
 				/>
 				<MapLegend showMmi={showShakemap} sheetSnap={sheetSnap} />
-				{state.variant === 'detail-float' && detailNode && (
+				{variant === 'detail-float' && detailNode && (
 					<EventDetailFloat>{detailNode}</EventDetailFloat>
 				)}
 			</div>
