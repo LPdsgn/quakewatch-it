@@ -21,7 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { usePersistentPref } from '@/hooks/use-persistent-pref'
 import { capture } from '@/lib/analytics'
-import { SHEET_HALF, SHEET_PEEK } from '@/lib/layout-constants'
+import { MOBILE_TOP_BAR_HEIGHT, SHEET_HALF, SHEET_PEEK } from '@/lib/layout-constants'
 import { clampT, shouldDeselect } from '@/lib/timeline'
 import { parseAppState, serializeAppState, type Variant } from '@/lib/url-state'
 
@@ -263,6 +263,11 @@ export function HomeClient() {
 
 	const isMobile = useIsMobile()
 
+	// Padding per flyTo su mobile: centra il marker nell'area visibile tra overlay top e drawer HALF.
+	const flyToPadding = isMobile
+		? { top: MOBILE_TOP_BAR_HEIGHT, bottom: Math.round(sheetSnap * window.innerHeight) }
+		: undefined
+
 	return (
 		<div className="grid h-dvh w-screen grid-cols-1 grid-rows-1 bg-background text-foreground md:grid-cols-[360px_1fr] md:grid-rows-[1fr_fit-content(100%)]">
 			{/* Sidebar: sotto md sparisce, sostituita dal bottom sheet (mobile-sheet.tsx) */}
@@ -338,6 +343,7 @@ export function HomeClient() {
 					showShakemap={showShakemap}
 					timeFilterMs={tMs}
 					handleRef={mapHandleRef}
+					flyToPadding={flyToPadding}
 				/>
 				<MapLegend showMmi={showShakemap} sheetSnap={sheetSnap} />
 				{variant === 'detail-float' && detailNode && (

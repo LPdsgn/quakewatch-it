@@ -31,6 +31,9 @@ export interface QuakeMapProps {
 	timeFilterMs?: number | null
 	/** Handle imperativo per lo scrub (drag): applica il filtro sui layer senza passare da React state. */
 	handleRef?: Ref<QuakeMapHandle>
+	/** Padding per flyTo su mobile quando il drawer è aperto: centra il marker nell'area visibile
+	 *  tra gli elementi fissi in alto e il bordo superiore del drawer. undefined su desktop. */
+	flyToPadding?: { top: number; bottom: number }
 }
 
 export interface QuakeMapHandle {
@@ -64,6 +67,7 @@ export function QuakeMap({
 	showShakemap,
 	timeFilterMs,
 	handleRef,
+	flyToPadding,
 }: QuakeMapProps) {
 	// resolvedTheme è undefined in SSR: default 'theme-dark' finché non montato (lezione header.tsx).
 	const { resolvedTheme } = useTheme()
@@ -159,8 +163,13 @@ export function QuakeMap({
 		}
 		const event = eventsRef.current.find((e) => e.eventId === selectedId)
 		if (!event) return
-		mapRef.current?.flyTo({ center: [event.longitude, event.latitude], zoom: 8, duration: 800 })
-	}, [selectedId, mapLoaded])
+		mapRef.current?.flyTo({
+			center: [event.longitude, event.latitude] as [number, number],
+			zoom: 8,
+			duration: 800,
+			...(flyToPadding && { padding: flyToPadding }),
+		})
+	}, [selectedId, mapLoaded, flyToPadding])
 
 	// Pulse: un solo layer, raggio/opacity animati via RAF su un paint property imperativo
 	// (non tramite React state — eviterebbe re-render a 60fps). Sobrio: 1 ciclo ~2.4s, disabilitato
@@ -227,7 +236,9 @@ export function QuakeMap({
 					// Solo se cambia selezione: ri-click sul marker già selezionato non deve marcare
 					// il ref (selectedId non cambierebbe, l'effect non lo consumerebbe mai, e una
 					// futura selezione esterna dello stesso evento troverebbe un ref stantio).
-					if (eventId !== selectedId) suppressFlyToRef.current = eventId
+					// Su mobile (flyToPadding presente) non si sopprime: il flyTo centra il marker
+					// nell'area visibile sopra il drawer aperto.
+					if (eventId !== selectedId && !flyToPadding) suppressFlyToRef.current = eventId
 					onSelect(eventId)
 				}
 			}}
