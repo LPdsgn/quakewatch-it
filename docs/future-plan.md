@@ -106,7 +106,7 @@ La mappa attuale (`packages/tokens/src/generate-map-style.ts`) è minimale: solo
 
 ## Persistenza stato UI: view in URL, preferenze in localStorage
 
-Data: 2026-08-02 · Stato: deciso, da implementare con la prima feature che lo richiede
+Data: 2026-08-02 · Stato: **implementato** (2026-08-04) — piano `docs/superpowers/plans/2026-08-03-persistenza-preferenze-localstorage.md`
 
 ### Contesto
 
@@ -133,7 +133,7 @@ Ora `variant` (preferenza) è codificato in URL insieme al view state (`window`/
 
 ### Quando
 
-Ora solo `variant` = margine zero. Implementare con la prima feature che lo richiede (probabilmente `basemap` con la feature mappa). Spostare `variant` ora = lavoro per zero valore utente. YAGNI.
+Implementato il 2026-08-04 (piano `docs/superpowers/plans/2026-08-03-persistenza-preferenze-localstorage.md`). `variant` ora vive in localStorage via `usePersistentPref`; l'hook è pronto per le future preferenze (`basemap`/`stations`/`expert`). URL override temporaneo non implementato (YAGNI — si aggiunge se servirà shareable).
 
 ### Riferimenti
 
