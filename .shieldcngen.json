@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "source": {
+    "type": "github",
+    "owner": "lpdsgn",
+    "repo": "quakewatch-it",
+    "url": "https://github.com/lpdsgn/quakewatch-it"
+  },
+  "global": {
+    "variant": "default",
+    "size": "sm",
+    "mode": "dark",
+    "theme": "none",
+    "font": "inter",
+    "themeAware": true
+  },
+  "badges": [
+    {
+      "id": "github.ci",
+      "group": "github",
+      "label": "CI",
+      "path": "/github/ci/lpdsgn/quakewatch-it.svg",
+      "query": {
+        "variant": "secondary"
+      },
+      "overrides": {},
+      "enabled": true
+    },
+    {
+      "id": "github.license",
+      "group": "github",
+      "label": "License",
+      "path": "/github/license/lpdsgn/quakewatch-it.svg",
+      "query": {
+        "variant": "ghost"
+      },
+      "overrides": {},
+      "enabled": true
+    },
+    {
+      "id": "stack.typescript",
+      "group": "stack",
+      "label": "TypeScript",
+      "path": "/badge/Stack-TypeScript-3178C6.svg",
+      "query": {
+        "logo": "typescript",
+        "variant": "branded"
+      },
+      "overrides": {},
+      "enabled": true
+    },
+    {
+      "id": "modern.esm",
+      "group": "modern",
+      "label": "ESM only",
+      "path": "/badge/ESM-only-16a34a.svg",
+      "query": {
+        "variant": "secondary"
+      },
+      "overrides": {},
+      "enabled": true
+    },
+    {
+      "id": "modern.agents-md",
+      "group": "modern",
+      "label": "Agent-friendly AGENTS.md",
+      "path": "/badge/Agent--friendly-AGENTS.md-D97757.svg",
+      "query": {
+        "variant": "secondary"
+      },
+      "overrides": {},
+      "enabled": true
+    }
+  ],
+  "generatedAt": "2026-08-05T00:17:48.406Z"
+}
